@@ -1,0 +1,8 @@
+{
+  "_comentario": "El padre envía un latido cada 2 s. Si pasan 'timeout_latido_segundos' sin latidos, se relanza.",
+  "timeout_latido_segundos": 8,
+  "gracia_arranque_segundos": 10,
+  "espera_maxima_reintento_segundos": 60,
+  "abrir_en_nueva_consola": true,
+  "imprimir_latidos": true
+}

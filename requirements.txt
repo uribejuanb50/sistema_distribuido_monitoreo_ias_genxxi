@@ -1,0 +1,10 @@
+# Dependencias de ejecución
+pyzmq>=26.0     # mensajería PUB/SUB entre nodos
+openpyxl>=3.1   # lectura de archivos .xlsx (incluye celdas combinadas)
+psutil>=5.9     # healthchecker: verificar/terminar un nodo padre colgado por su PID
+streamlit>=1.40 # dashboard interactivo
+pandas>=2.2     # tablas del dashboard (lectura de SQLite)
+plotly>=5.24    # gráficos interactivos del dashboard
+
+# Dependencias de desarrollo
+pytest>=8.0     # pruebas automáticas

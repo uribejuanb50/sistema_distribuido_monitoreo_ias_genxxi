@@ -1,0 +1,522 @@
+[
+    {
+        "Sección / Visual": "Visual / Bloque 4",
+        "Valores Extraídos": [
+            "Actualizado: miércoles, 28 de octubre de 2026"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 24",
+        "Valores Extraídos": [
+            "3.752"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 52",
+        "Valores Extraídos": [
+            "8,6 %"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 53",
+        "Valores Extraídos": [
+            "2.967"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 54",
+        "Valores Extraídos": [
+            "2.363.989"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 55",
+        "Valores Extraídos": [
+            "204.019"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 56",
+        "Valores Extraídos": [
+            "504.994"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 57",
+        "Valores Extraídos": [
+            "37,8"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 58",
+        "Valores Extraídos": [
+            "2,5"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 59",
+        "Valores Extraídos": [
+            "3.469"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 60",
+        "Valores Extraídos": [
+            "277.224"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 61",
+        "Valores Extraídos": [
+            "383.354"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 62",
+        "Valores Extraídos": [
+            "1,4"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 63",
+        "Valores Extraídos": [
+            "36,9"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 77",
+        "Valores Extraídos": [
+            "2,7 %"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 78",
+        "Valores Extraídos": [
+            "55,6"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 79",
+        "Valores Extraídos": [
+            "2,7"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 80",
+        "Valores Extraídos": [
+            "2.022"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 81",
+        "Valores Extraídos": [
+            "37.886"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 82",
+        "Valores Extraídos": [
+            "81.147"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 83",
+        "Valores Extraídos": [
+            "2,1"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 84",
+        "Valores Extraídos": [
+            "1.832"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 85",
+        "Valores Extraídos": [
+            "1.169.767"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 86",
+        "Valores Extraídos": [
+            "32.156"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 87",
+        "Valores Extraídos": [
+            "87.571"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 88",
+        "Valores Extraídos": [
+            "68,0"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 101",
+        "Valores Extraídos": [
+            "14,4 %"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 103",
+        "Valores Extraídos": [
+            "1.447"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 104",
+        "Valores Extraídos": [
+            "239.338"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 105",
+        "Valores Extraídos": [
+            "302.207"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 106",
+        "Valores Extraídos": [
+            "1,3"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 107",
+        "Valores Extraídos": [
+            "16,3"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 108",
+        "Valores Extraídos": [
+            "1.135"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 109",
+        "Valores Extraídos": [
+            "1.194.222"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 110",
+        "Valores Extraídos": [
+            "171.863"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 111",
+        "Valores Extraídos": [
+            "417.423"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 112",
+        "Valores Extraídos": [
+            "2,4"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 113",
+        "Valores Extraídos": [
+            "16,3"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 114",
+        "Valores Extraídos": [
+            "Gerencia",
+            "Usuarios",
+            "Sesiones",
+            "Acciones",
+            "Acc_x_Sesion",
+            "SOPORTE INTEGRAL CANALES ATENCION UMM",
+            "SERVICIO INTEGRAL CANALES ATENCION UMM",
+            "RELACIONES PRIORITARIAS CANALES ATENCION UMM",
+            "R5-Oriente",
+            "R4-Centro",
+            "R3-Occidente",
+            "R2-Noroccidente",
+            "R1-Costa",
+            "COMERCIAL CANALES ATENCION UMM",
+            "Total"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 116",
+        "Valores Extraídos": [
+            "GERENCIA",
+            "%Usabilidad",
+            "Sesiones",
+            "Acciones",
+            "Acc_x_Sesion",
+            "TMO/TPA",
+            "%NPS",
+            "%FCR",
+            "COMERCIAL CANALES ATENCION UMM",
+            "R1-Costa",
+            "R2-Noroccidente",
+            "R3-Occidente",
+            "R4-Centro",
+            "R5-Oriente",
+            "RELACIONES PRIORITARIAS CANALES ATENCION UMM",
+            "SERVICIO INTEGRAL CANALES ATENCION UMM",
+            "SOPORTE INTEGRAL CANALES ATENCION UMM",
+            "T-R1",
+            "T-R2",
+            "T-R3",
+            "T-R4",
+            "Total"
+        ]
+    },
+    {
+        "Sección / Visual": "0 mil",
+        "Valores Extraídos": [
+            "0 mil0 mil",
+            "20 mil20 mil",
+            "40 mil40 mil",
+            "0 %0 %",
+            "10 %10 %",
+            "20 %20 %",
+            "FECHAFECHA",
+            "01/10/202601/10/2026",
+            "02/10/202602/10/2026",
+            "03/10/202603/10/2026",
+            "04/10/202604/10/2026",
+            "05/10/202605/10/2026",
+            "06/10/202606/10/2026",
+            "07/10/202607/10/2026",
+            "08/10/202608/10/2026",
+            "09/10/202609/10/2026",
+            "10/10/202610/10/2026",
+            "11/10/202611/10/2026",
+            "12/10/202612/10/2026",
+            "13/10/202613/10/2026",
+            "14/10/202614/10/2026",
+            "15/10/202615/10/2026",
+            "16/10/202616/10/2026",
+            "17/10/202617/10/2026",
+            "18/10/202618/10/2026",
+            "19/10/202619/10/2026",
+            "20/10/202620/10/2026",
+            "21/10/202621/10/2026",
+            "22/10/202622/10/2026",
+            "23/10/202623/10/2026",
+            "24/10/202624/10/2026",
+            "25/10/202625/10/2026",
+            "26/10/202626/10/2026",
+            "27/10/202627/10/2026",
+            "28/10/202628/10/2026",
+            "8,4 %",
+            "3,0 %",
+            "15,2 %",
+            "1,6 %",
+            "1,7 %",
+            "15,2 %",
+            "9,8 %",
+            "1,9 %",
+            "8,9 %",
+            "2,4 %",
+            "9,5 %",
+            "8,0 %",
+            "8,9 %",
+            "6,1 %",
+            "8,8 %",
+            "8,0 %",
+            "9,0 %"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 119",
+        "Valores Extraídos": [
+            "Semana Mes",
+            "Acciones",
+            "Sesiones",
+            "%Usabilidad",
+            "TMO/TPA",
+            "%FCR",
+            "%NPS",
+            "Var_Sesiones %",
+            "Semana 1",
+            "131.791",
+            "52.156",
+            "7,7 %",
+            "10:20",
+            "86,1 %",
+            "64,2 %",
+            "0,0 %",
+            "Semana 2",
+            "125.827",
+            "49.466",
+            "9,3 %",
+            "09:52",
+            "85,6 %",
+            "62,5 %",
+            "-5,2 %",
+            "Semana 3",
+            "130.059",
+            "53.716",
+            "9,6 %",
+            "09:10",
+            "86,1 %",
+            "64,5 %",
+            "8,6 %",
+            "Semana 4",
+            "117.317",
+            "48.681",
+            "8,2 %",
+            "09:26",
+            "86,8 %",
+            "65,2 %",
+            "-9,4 %",
+            "Total",
+            "504.994",
+            "204.019",
+            "8,6 %",
+            "09:42",
+            "86,2 %",
+            "64,1 %"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 120",
+        "Valores Extraídos": [
+            "Ubicación",
+            "Usuarios",
+            "Sesiones",
+            "Acciones",
+            "Acc_x_Sesion",
+            "COS",
+            "ABAI",
+            "BRM",
+            "AQI",
+            "ATENTO",
+            "Bogota Norte",
+            "Bogota Occidente",
+            "ALMACONTACT",
+            "Bogota Sur",
+            "Bogota Oriente",
+            "Eje Cafetero",
+            "Vacana",
+            "Costa Norte",
+            "Sanboy",
+            "Tolhuca",
+            "Cali",
+            "Medellin",
+            "Cunmenal",
+            "Costa Sur",
+            "Antcho"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 122",
+        "Valores Extraídos": [
+            "Ubicación",
+            "%Usabilidad",
+            "Sesiones",
+            "Acciones",
+            "Acc_x_Sesion",
+            "TMO/TPA",
+            "%NPS",
+            "%FCR",
+            "COS",
+            "ABAI",
+            "BRM",
+            "AQI",
+            "ATENTO",
+            "Bogota Norte",
+            "Bogota Sur",
+            "Eje Cafetero",
+            "Bogota Occidente",
+            "ALMACONTACT",
+            "Bogota Oriente",
+            "Costa Norte",
+            "Vacana",
+            "Sanboy",
+            "Cali",
+            "Costa Sur",
+            "Cunmenal",
+            "Medellin",
+            "Tolhuca",
+            "Antcho"
+        ]
+    },
+    {
+        "Sección / Visual": "0,0 mill.",
+        "Valores Extraídos": [
+            "0,0 mill.0,0 mill.",
+            "0,2 mill.0,2 mill.",
+            "0,4 mill.0,4 mill.",
+            "1,31,3",
+            "1,41,4",
+            "1,51,5",
+            "1,61,6",
+            "Grupo_AntiguedadGrupo_Antiguedad",
+            "1) 0 - 3 meses1) 0 - 3 meses",
+            "2) 3 - 6 meses2) 3 - 6 meses",
+            "3) Más de 6 meses3) Más de 6 meses",
+            "9.711",
+            "67.648",
+            "305.995",
+            "6.615",
+            "81.933",
+            "416.625",
+            "1,6",
+            "1,4",
+            "1,3"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 127",
+        "Valores Extraídos": [
+            "2,9 %",
+            "9,1 %",
+            "9,4 %"
+        ]
+    },
+    {
+        "Sección / Visual": "Visual / Bloque 128",
+        "Valores Extraídos": [
+            "Canal",
+            "Usuario",
+            "Nombre",
+            "Sesiones",
+            "Sesiones Con Contacto",
+            "Acciones",
+            "Acc_x_Sesion",
+            "%NPS",
+            "%FCR",
+            "TMO"
+        ]
+    }
+]
+
+
+
+Inyección por consola:
+let estructuraReporte = [];
+ 
+// Recorre cada contenedor visual independiente en el tablero de Power BI
+document.querySelectorAll('visual-container').forEach((visual, index) => {
+    // Intenta obtener el título del gráfico o tabla
+    let tituloElem = visual.querySelector('.visualTitle, .header-text, title');
+    let titulo = tituloElem ? tituloElem.textContent.trim() : `Visual / Bloque ${index + 1}`;
+    // Extrae los textos únicamente dentro de este contenedor
+    let textos = Array.from(visual.querySelectorAll('svg text, .pivotTableCellWrap, .tablixCellContent, .value'))
+                      .map(nodo => nodo.textContent.trim())
+                      .filter(texto => texto !== "");
+ 
+    if (textos.length > 0) {
+        estructuraReporte.push({
+            'Sección / Visual': titulo,
+            'Valores Extraídos': textos
+        });
+    }
+});
+ 
+console.log(estructuraReporte);

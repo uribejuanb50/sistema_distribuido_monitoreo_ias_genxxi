@@ -1,0 +1,15 @@
+# Entorno y caché de Python
+.venv/
+__pycache__/
+.pytest_cache/
+
+# Artefactos generados al ejecutar
+logs/
+run/
+datos/registro/
+salida/*.json
+salida/*.tmp
+*.bak
+
+# Datos de entrada reales: no se versionan
+datos/entrada/*.xlsx

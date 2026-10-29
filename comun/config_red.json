@@ -1,0 +1,10 @@
+{
+  "_comentario": "Red compartida. host_enlace: interfaz donde escucha el padre ('*' para aceptar otras máquinas). host_padre: IP del padre para hijos y healthchecker.",
+  "host_enlace": "127.0.0.1",
+  "host_padre": "127.0.0.1",
+  "puerto_datos": 5555,
+  "puerto_estado": 5556,
+  "topico_datos": "datos",
+  "topico_latido": "latido",
+  "topico_evento": "evento"
+}

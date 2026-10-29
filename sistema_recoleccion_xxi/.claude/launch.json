@@ -1,0 +1,13 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dashboard-demo",
+      "runtimeExecutable": ".venv/Scripts/python.exe",
+      "runtimeArgs": ["-m", "streamlit", "run", "dashboard/app.py", "--server.port", "8501",
+                      "--server.headless", "true", "--browser.gatherUsageStats", "false",
+                      "--", "--bd", "datos/registro/demo.sqlite3"],
+      "port": 8501
+    }
+  ]
+}

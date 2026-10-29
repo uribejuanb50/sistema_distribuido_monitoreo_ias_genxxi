@@ -1,0 +1,57 @@
+{
+  "_comentario": "Configuración del nodo padre. Rutas relativas a la raíz del proyecto.",
+  "nodo_id": "nodo_padre",
+  "ruta_base_datos": "datos/registro/nodo_padre.sqlite3",
+  "ruta_json_salida": "salida/alertas_powerautomate.json",
+  "ruta_pid": "run/nodo_padre.pid",
+  "intervalo_latido_segundos": 2,
+  "analisis": {
+    "_comentario": "Umbrales EXPERIMENTALES (referencia: simulación Monte Carlo del NPS). Recalibrar con datos reales autorizados.",
+    "reglas_generales": {
+      "ventana_tendencia": 3,
+      "umbral_estabilidad": 1.0,
+      "ventana_volatilidad": 4,
+      "factor_volatilidad_alta": 1.5,
+      "min_observaciones_estadistica": 6,
+      "umbral_z": 2.0,
+      "min_variaciones_patron": 6,
+      "min_repeticiones_patron": 2,
+      "nivel_minimo_notificacion": "media"
+    },
+    "perfil_por_defecto": {
+      "criticidad": "seguimiento",
+      "modo_variacion": "absoluta",
+      "sentido_favorable": "subir",
+      "limites_magnitud": [1, 2, 3, 4, 5],
+      "matriz_caidas": {
+        "_comentario": "Un nivel por intervalo: <1, [1,2), [2,3), [3,4), [4,5), >=5",
+        "cumple":    ["sin_alerta", "sin_alerta", "baja",  "baja",  "media", "media"],
+        "no_cumple": ["baja",       "baja",       "media", "media", "alta",  "alta"]
+      }
+    },
+    "perfiles": [
+      {
+        "patron": "*nps*",
+        "_comentario": "NPS: intervalos de 1 punto, como en la simulación Monte Carlo.",
+        "criticidad": "critica"
+      },
+      {
+        "patron": "*.cumplimiento_mensual",
+        "_comentario": "El cumplimiento mensual del Excel varía 10-20 pp entre meses: intervalos de 5 pp (provisional).",
+        "criticidad": "critica",
+        "limites_magnitud": [5, 10, 15, 20, 25]
+      },
+      {
+        "patron": "*.cumplimiento_acumulado",
+        "criticidad": "importante"
+      },
+      {
+        "patron": "*.real_*",
+        "_comentario": "Unidades: se mide la variación relativa (%) frente al periodo anterior.",
+        "criticidad": "seguimiento",
+        "modo_variacion": "relativa",
+        "limites_magnitud": [5, 10, 15, 20, 25]
+      }
+    ]
+  }
+}

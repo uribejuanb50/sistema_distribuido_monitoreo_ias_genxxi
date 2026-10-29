@@ -1,0 +1,9 @@
+{
+  "_comentario": "Plantilla de nodo hijo. Lee un CSV ordenado con datos FICTICIOS del NPS de VIKI. Copia la carpeta para crear nodos nuevos.",
+  "nodo_id": "nodo_plantilla_csv",
+  "ruta_archivo": "datos/ejemplo/nps_viki_ficticio.csv",
+  "separador": ",",
+  "intervalo_segundos": 10,
+  "reenvio_forzado_segundos": 300,
+  "espera_conexion_segundos": 1.0
+}
