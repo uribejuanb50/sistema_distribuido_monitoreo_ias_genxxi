@@ -4,7 +4,6 @@ __pycache__/
 .pytest_cache/
 
 # Artefactos generados al ejecutar
-logs/
 run/
 datos/registro/
 salida/*.json

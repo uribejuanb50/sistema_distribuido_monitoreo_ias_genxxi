@@ -1,0 +1,24 @@
+2026-11-06 10:32:20 | INFO    | nodo_hijo | Nodo nodo_powerbi_viki publicando en tcp://127.0.0.1:5555 (fuente: reporte Power BI VIKI)
+2026-11-06 10:32:20 | INFO    | navegador | Iniciando edge (visible) con el perfil C:\Users\38519950\AppData\Local\sistema_recoleccion_xxi\perfil_navegador_powerbi
+2026-11-06 10:32:36 | ERROR   | nodo_hijo | Falló el servicio de la fuente: Error del navegador: session not created: Microsoft Edge failed to start: crashed.
+2026-11-06 10:32:36 | ERROR   | nodo_hijo | Estado enviado al padre: CAIDO (Error del navegador: session not created: Microsoft Edge failed to start: crashed.)
+2026-11-06 10:32:36 | ERROR   | nodo_hijo | SERVICIO CAÍDO: el nodo nodo_powerbi_viki se cierra. Revisa el error de arriba y vuelve a iniciarlo (python main.py).
+2026-11-06 10:33:30 | INFO    | nodo_hijo | Nodo nodo_powerbi_viki publicando en tcp://127.0.0.1:5555 (fuente: reporte Power BI VIKI)
+2026-11-06 10:33:30 | INFO    | navegador | Iniciando edge (visible) con el perfil C:\Users\38519950\AppData\Local\sistema_recoleccion_xxi\perfil_navegador_powerbi
+2026-11-06 10:33:33 | ERROR   | nodo_hijo | Falló el servicio de la fuente: Error del navegador: session not created: Microsoft Edge failed to start: crashed.
+2026-11-06 10:33:33 | ERROR   | nodo_hijo | Estado enviado al padre: CAIDO (Error del navegador: session not created: Microsoft Edge failed to start: crashed.)
+2026-11-06 10:33:33 | ERROR   | nodo_hijo | SERVICIO CAÍDO: el nodo nodo_powerbi_viki se cierra. Revisa el error de arriba y vuelve a iniciarlo (python main.py).
+2026-11-06 10:51:30 | INFO    | nodo_hijo | Nodo nodo_powerbi_viki publicando en tcp://127.0.0.1:5555 (fuente: reporte Power BI VIKI)
+2026-11-06 10:51:30 | INFO    | navegador | Iniciando edge (visible) con el perfil C:\Users\38519950\AppData\Local\sistema_recoleccion_xxi\perfil_navegador_powerbi
+2026-11-06 10:51:35 | ERROR   | nodo_hijo | Falló el servicio de la fuente: Error del navegador: session not created: Microsoft Edge failed to start: crashed.
+2026-11-06 10:51:35 | WARNING | nodo_hijo | Lectura #1 falló (1 de 3 seguidas antes de dar el servicio por caído): se reintenta
+2026-11-06 10:51:35 | WARNING | nodo_hijo | Estado enviado al padre: DEGRADADO (Error del navegador: session not created: Microsoft Edge failed to start: crashed.)
+2026-11-06 10:51:35 | INFO    | nodo_hijo | Próxima lectura en 10 s (Ctrl+C para detener)
+2026-11-06 10:51:45 | INFO    | navegador | Iniciando edge (visible) con el perfil C:\Users\38519950\AppData\Local\sistema_recoleccion_xxi\perfil_navegador_powerbi
+2026-11-06 10:51:48 | ERROR   | nodo_hijo | Falló el servicio de la fuente: Error del navegador: session not created: Microsoft Edge failed to start: crashed.
+2026-11-06 10:51:48 | WARNING | nodo_hijo | Lectura #2 falló (2 de 3 seguidas antes de dar el servicio por caído): se reintenta
+2026-11-06 10:51:48 | INFO    | nodo_hijo | Próxima lectura en 12 s (Ctrl+C para detener)
+2026-11-06 10:52:00 | INFO    | navegador | Iniciando edge (visible) con el perfil C:\Users\38519950\AppData\Local\sistema_recoleccion_xxi\perfil_navegador_powerbi
+2026-11-06 10:52:03 | ERROR   | nodo_hijo | Falló el servicio de la fuente: Error del navegador: session not created: Microsoft Edge failed to start: crashed.
+2026-11-06 10:52:03 | ERROR   | nodo_hijo | Estado enviado al padre: CAIDO (Error del navegador: session not created: Microsoft Edge failed to start: crashed.)
+2026-11-06 10:52:03 | ERROR   | nodo_hijo | SERVICIO CAÍDO: el nodo nodo_powerbi_viki se cierra. Revisa el error de arriba y vuelve a iniciarlo (python main.py).

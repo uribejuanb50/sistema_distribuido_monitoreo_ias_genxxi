@@ -1,0 +1,57 @@
+2026-11-05 15:55:00 | INFO    | nodo_padre | Nodo padre (pid 18204) escuchando datos en tcp://127.0.0.1:5555 y publicando estado en tcp://127.0.0.1:5556
+2026-11-05 15:55:04 | INFO    | nodo_padre | Mensaje #1 de nodo_excel_cumplimiento: 76 observaciones (76 nuevas o revisadas)
+2026-11-05 15:55:04 | INFO    | nodo_padre | pospago.real_mensual 2026-04-01: nivel media en un periodo histórico (registrado, no se notifica)
+2026-11-05 15:55:04 | INFO    | nodo_padre | pospago.real_mensual 2026-06-01: nivel media en un periodo histórico (registrado, no se notifica)
+2026-11-05 15:55:04 | INFO    | nodo_padre | tv_voz.cumplimiento_acumulado 2026-03-01: nivel media en un periodo histórico (registrado, no se notifica)
+2026-11-05 15:55:04 | INFO    | nodo_padre | tv_voz.cumplimiento_acumulado 2026-04-01: nivel media en un periodo histórico (registrado, no se notifica)
+2026-11-05 15:55:04 | INFO    | nodo_padre | tv_voz.cumplimiento_acumulado 2026-05-01: nivel media en un periodo histórico (registrado, no se notifica)
+2026-11-05 15:55:04 | INFO    | nodo_padre | tv_voz.cumplimiento_mensual 2026-04-01: nivel alta en un periodo histórico (registrado, no se notifica)
+2026-11-05 15:55:04 | INFO    | nodo_padre | tv_voz.cumplimiento_mensual 2026-05-01: nivel media en un periodo histórico (registrado, no se notifica)
+2026-11-05 15:55:04 | INFO    | nodo_padre | tv_voz.real_mensual 2026-04-01: nivel media en un periodo histórico (registrado, no se notifica)
+2026-11-05 15:55:04 | INFO    | nodo_padre | tv_voz.real_mensual 2026-05-01: nivel media en un periodo histórico (registrado, no se notifica)
+2026-11-05 16:00:08 | INFO    | nodo_padre | Mensaje #2 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-05 16:05:11 | INFO    | nodo_padre | Mensaje #3 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-05 16:11:01 | INFO    | nodo_padre | Nodo padre (pid 30512) escuchando datos en tcp://127.0.0.1:5555 y publicando estado en tcp://127.0.0.1:5556
+2026-11-05 16:11:05 | INFO    | nodo_padre | Mensaje #4 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-05 16:16:08 | INFO    | nodo_padre | Mensaje #5 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-05 16:21:13 | INFO    | nodo_padre | Mensaje #6 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-05 19:25:05 | INFO    | nodo_padre | Nodo padre (pid 27644) escuchando datos en tcp://127.0.0.1:5555 y publicando estado en tcp://127.0.0.1:5556
+2026-11-05 19:25:06 | INFO    | nodo_padre | Mensaje #7 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-06 07:33:58 | INFO    | nodo_padre | Nodo padre (pid 18224) escuchando datos en tcp://127.0.0.1:5555 y publicando estado en tcp://127.0.0.1:5556
+2026-11-06 07:33:59 | INFO    | nodo_padre | Mensaje #8 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-06 07:34:00 | ERROR   | nodo_padre | No se pudieron abrir los puertos (Address in use (addr='tcp://127.0.0.1:5555')). ¿Ya hay otro nodo padre en ejecución?
+2026-11-06 07:34:00 | ERROR   | nodo_padre | No se pudieron abrir los puertos (Address in use (addr='tcp://127.0.0.1:5555')). ¿Ya hay otro nodo padre en ejecución?
+2026-11-06 07:38:45 | INFO    | nodo_padre | Mensaje #9 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-06 07:39:05 | INFO    | nodo_padre | Nodo padre (pid 13252) escuchando datos en tcp://127.0.0.1:5555 y publicando estado en tcp://127.0.0.1:5556
+2026-11-06 07:43:53 | INFO    | nodo_padre | Mensaje #10 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-06 07:48:55 | INFO    | nodo_padre | Mensaje #11 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-06 07:53:58 | INFO    | nodo_padre | Mensaje #12 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-06 09:21:00 | INFO    | nodo_padre | Nodo padre (pid 21820) escuchando datos en tcp://127.0.0.1:5555 y publicando estado en tcp://127.0.0.1:5556
+2026-11-06 09:21:05 | INFO    | nodo_padre | Mensaje #1 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-06 09:21:05 | INFO    | nodo_padre | Nodo nodo_excel_cumplimiento activo: lectura correcta
+2026-11-06 09:26:10 | INFO    | nodo_padre | Mensaje #3 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-06 09:27:36 | INFO    | nodo_padre | Nodo padre (pid 1816) escuchando datos en tcp://127.0.0.1:5555 y publicando estado en tcp://127.0.0.1:5556
+2026-11-06 09:42:06 | INFO    | nodo_padre | Mensaje #4 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-06 09:43:36 | INFO    | nodo_padre | Nodo padre (pid 10524) escuchando datos en tcp://127.0.0.1:5555 y publicando estado en tcp://127.0.0.1:5556
+2026-11-06 09:43:40 | INFO    | nodo_padre | Mensaje #1 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-06 09:43:40 | INFO    | nodo_padre | Nodo nodo_excel_cumplimiento activo: lectura correcta
+2026-11-06 09:50:06 | INFO    | nodo_padre | Nodo padre (pid 6056) escuchando datos en tcp://127.0.0.1:5555 y publicando estado en tcp://127.0.0.1:5556
+2026-11-06 09:50:10 | INFO    | nodo_padre | Mensaje #1 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-06 09:50:10 | INFO    | nodo_padre | Nodo nodo_excel_cumplimiento activo: lectura correcta
+2026-11-06 09:55:10 | INFO    | nodo_padre | Mensaje #3 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-06 10:02:58 | INFO    | nodo_padre | Nodo padre (pid 7104) escuchando datos en tcp://127.0.0.1:5555 y publicando estado en tcp://127.0.0.1:5556
+2026-11-06 10:32:04 | INFO    | nodo_padre | Nodo padre (pid 18304) escuchando datos en tcp://127.0.0.1:5555 y publicando estado en tcp://127.0.0.1:5556
+2026-11-06 10:32:08 | INFO    | nodo_padre | Mensaje #1 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-06 10:32:08 | INFO    | nodo_padre | Nodo nodo_excel_cumplimiento activo: lectura correcta
+2026-11-06 10:32:37 | ERROR   | nodo_padre | SERVICIO CAÍDO | nodo nodo_powerbi_viki | Error del navegador: session not created: Microsoft Edge failed to start: crashed.
+2026-11-06 10:32:37 | INFO    | nodo_padre | JSON de salida actualizado: D:\OneDrive - Comunicacion Celular S.A.- Comcel S.A\JuanUribe\proyectos\GenXXI\salida\alertas_powerautomate.json (1 alertas, lote c6c22f1c71ee412dbf584773ee8fdcd6)
+2026-11-06 10:33:33 | ERROR   | nodo_padre | SERVICIO CAÍDO | nodo nodo_powerbi_viki | Error del navegador: session not created: Microsoft Edge failed to start: crashed.
+2026-11-06 10:33:33 | INFO    | nodo_padre | JSON de salida actualizado: D:\OneDrive - Comunicacion Celular S.A.- Comcel S.A\JuanUribe\proyectos\GenXXI\salida\alertas_powerautomate.json (1 alertas, lote 1cc4b8ca96f74ef597b2d6646ffd4031)
+2026-11-06 10:43:25 | INFO    | nodo_padre | Nodo padre (pid 37064) escuchando datos en tcp://127.0.0.1:5555 y publicando estado en tcp://127.0.0.1:5556
+2026-11-06 10:43:25 | INFO    | nodo_padre | Mensaje #3 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-06 10:48:16 | INFO    | nodo_padre | Mensaje #4 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-06 10:50:40 | INFO    | nodo_padre | Nodo padre (pid 16048) escuchando datos en tcp://127.0.0.1:5555 y publicando estado en tcp://127.0.0.1:5556
+2026-11-06 10:50:45 | INFO    | nodo_padre | Mensaje #1 de nodo_excel_cumplimiento: 76 observaciones (0 nuevas o revisadas)
+2026-11-06 10:50:45 | INFO    | nodo_padre | Nodo nodo_excel_cumplimiento activo: lectura correcta
+2026-11-06 10:51:35 | WARNING | nodo_padre | Nodo nodo_powerbi_viki degradado: Error del navegador: session not created: Microsoft Edge failed to start: crashed.
+2026-11-06 10:52:03 | ERROR   | nodo_padre | SERVICIO CAÍDO | nodo nodo_powerbi_viki | Error del navegador: session not created: Microsoft Edge failed to start: crashed.
