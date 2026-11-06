@@ -527,6 +527,7 @@ def crear_extractor(config: dict[str, Any]) -> ExtractorPowerBI:
         modo_sesion=config.get("modo_sesion", "perfil_propio"),
         puerto_depuracion=config.get("puerto_depuracion", 9222),
         ruta_driver=resolver_ruta(ruta_driver) if ruta_driver else None,
+        texto_reporte_listo=config.get("texto_reporte_listo", "Actualizado"),
     )
     guardado = config.get("guardar_ultima_captura")
     return ExtractorPowerBI(mapa, navegador=navegador, ruta_guardado=resolver_ruta(guardado) if guardado else None)

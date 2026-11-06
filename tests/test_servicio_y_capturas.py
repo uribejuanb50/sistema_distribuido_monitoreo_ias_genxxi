@@ -235,3 +235,89 @@ def test_sin_cerrar_ante_error_el_hijo_sigue(monkeypatch, tmp_path):
                                       cerrar_ante_error=False)
     assert codigo == 0
     assert [m.contenido["estado"] for m in enviados if m.tipo == "estado"] == ["degradado", "activo", "detenido"]
+
+
+# --- navegador: espera del embed y recarga en cada lectura -----------------------------------
+
+class RelojFalso:
+    def __init__(self):
+        self.t = 0.0
+
+    def monotonic(self):
+        return self.t
+
+    def sleep(self, segundos):
+        self.t += segundos
+
+
+class DriverFalso:
+    """Imita a Selenium: cada consulta del estado de carga avanza un paso de 'estados'."""
+
+    def __init__(self, estados, url="https://app.powerbi.com/groups/me/reports/x"):
+        self.estados = list(estados)
+        self.current_url = url
+        self.title = "General - Tablero"
+        self.acciones = []
+
+    def execute_script(self, script, *args):
+        if "pbi-svg-loading" in script:
+            estado = self.estados.pop(0) if len(self.estados) > 1 else self.estados[0]
+            if "url" in estado:
+                self.current_url = estado["url"]
+            return {k: v for k, v in estado.items() if k != "url"}
+        return "firma-estable"
+
+    def get(self, url):
+        self.acciones.append("get")
+
+    def refresh(self):
+        self.acciones.append("refresh")
+
+
+LISTO = {"visuales": 129, "pantalla_carga": False, "visuales_cargando": 0, "texto_listo": True}
+
+
+def navegador_falso(monkeypatch, estados, **kwargs):
+    pytest.importorskip("selenium")
+    navegador_mod = cargar_modulo("navegador_espera", DIR_POWERBI / "navegador.py")
+    reloj = RelojFalso()
+    monkeypatch.setattr(navegador_mod, "time", reloj)
+    nav = navegador_mod.NavegadorPowerBI("https://app.powerbi.com/groups/me/reports/x", minimo_visuales=30,
+                                         segundos_estable=2, espera_carga_segundos=30, **kwargs)
+    nav._driver = DriverFalso(estados)
+    return nav, reloj
+
+
+def test_espera_pantalla_de_carga_y_spinners_antes_de_leer(monkeypatch):
+    estados = ([{"visuales": 0, "pantalla_carga": True, "visuales_cargando": 0, "texto_listo": False}] * 4
+               + [{"visuales": 129, "pantalla_carga": False, "visuales_cargando": 12, "texto_listo": True}] * 6
+               + [LISTO])
+    nav, reloj = navegador_falso(monkeypatch, estados)
+    nav._esperar_reporte()
+    assert reloj.t >= 0.5 * 10 + 2  # esperó la carga y luego 2 s de textos estables
+
+
+def test_tablero_que_nunca_termina_de_cargar_es_servicio_caido(monkeypatch):
+    nav, _ = navegador_falso(monkeypatch, [{"visuales": 129, "pantalla_carga": False, "visuales_cargando": 3,
+                                            "texto_listo": True}])
+    with pytest.raises(ErrorServicio, match="no terminó de cargar"):
+        nav._esperar_reporte()
+
+
+def test_login_que_nadie_completa_es_servicio_caido(monkeypatch):
+    nav, _ = navegador_falso(monkeypatch, [{**LISTO, "url": "https://login.microsoftonline.com/x"}],
+                             espera_inicio_sesion_segundos=60)
+    with pytest.raises(ErrorServicio, match="No se inició sesión"):
+        nav._esperar_reporte()
+
+
+def test_cada_lectura_recarga_la_pagina(monkeypatch):
+    nav, _ = navegador_falso(monkeypatch, [LISTO])
+    driver = nav._driver
+    monkeypatch.setattr(nav, "_leer_tablas_completas", lambda visuales: None)
+    driver.execute_script = (lambda original: lambda script, *a: [] if "estructuraReporte" in script
+                             else original(script, *a))(driver.execute_script)
+    nav.capturar()
+    nav.capturar()
+    assert driver.acciones == ["refresh", "refresh"]
+    nav._driver = None

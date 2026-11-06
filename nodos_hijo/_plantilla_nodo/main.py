@@ -154,8 +154,11 @@ def main() -> int:
     ultimo_envio = ultimo_envio_captura = 0.0
     lecturas_ok = 0
     codigo_salida = 0
+    numero_lectura = 0
     try:
         while True:
+            inicio_ciclo = time.monotonic()
+            numero_lectura += 1
             lectura = extraer_seguro(extractor, cerrar_ante_error)
             reenvio = config["reenvio_forzado_segundos"]
 
@@ -191,13 +194,16 @@ def main() -> int:
                              motivo)
                     ultima_huella, ultimo_envio = huella, time.monotonic()
                 else:
-                    log.debug("Sin cambios en la fuente")
+                    log.info("Lectura #%d: sin cambios en la fuente (no se reenvía)", numero_lectura)
                 emisor.avisar_estado("activo", "lectura correcta", fuente=extractor.fuente)
 
             if args.una_vez:
                 codigo_salida = 0 if lectura.error is None else 1
                 break
-            time.sleep(config["intervalo_segundos"])
+            # El intervalo se cuenta desde el INICIO de la lectura (cargar el reporte también cuenta).
+            espera = max(0.0, config["intervalo_segundos"] - (time.monotonic() - inicio_ciclo))
+            log.info("Próxima lectura en %.0f s (Ctrl+C para detener)", espera)
+            time.sleep(espera)
     except KeyboardInterrupt:
         log.info("Detenido por el usuario (Ctrl+C)")
         emisor.avisar_estado("detenido", "detenido por el usuario", fuente=extractor.fuente)

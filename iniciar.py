@@ -11,6 +11,10 @@ Uso (desde la raíz del proyecto):
     python iniciar.py                 # padre + healthchecker + nodo Excel
     python iniciar.py --todo          # además el nodo CSV de ejemplo y el dashboard
     python iniciar.py --powerbi       # además el nodo que lee el reporte Power BI de VIKI
+    python iniciar.py --solo-powerbi  # padre + healthchecker + nodo Power BI (sin el Excel)
+
+Las consolas de los nodos hijos NO se cierran cuando el nodo termina (p. ej. si el servicio de
+Power BI se cae): así se puede leer el error. Se cierran a mano o con --detener.
     python iniciar.py --sin-ventanas  # todo en segundo plano (la salida queda en logs/)
     python iniciar.py --estado        # muestra qué procesos están vivos
     python iniciar.py --detener       # detiene todo lo iniciado
@@ -50,14 +54,17 @@ class Proceso:
     nombre: str
     carpeta: Path
     argumentos: tuple[str, ...]
+    mantener_ventana: bool = False  # la consola sigue abierta al terminar (para leer el error)
 
 
 PADRE = Proceso("nodo_padre", RAIZ_PROYECTO / "nodo_padre" / "nodo_padre", ("main.py",))
 HEALTHCHECKER = Proceso("healthchecker", RAIZ_PROYECTO / "nodo_padre", ("healthchecker.py",))
 NODO_EXCEL = Proceso("nodo_excel_cumplimiento", RAIZ_PROYECTO / "nodos_hijo" / "nodo_excel_cumplimiento",
-                     ("main.py",))
-NODO_CSV = Proceso("nodo_plantilla_csv", RAIZ_PROYECTO / "nodos_hijo" / "_plantilla_nodo", ("main.py",))
-NODO_POWERBI = Proceso("nodo_powerbi_viki", RAIZ_PROYECTO / "nodos_hijo" / "nodo_powerbi_viki", ("main.py",))
+                     ("main.py",), mantener_ventana=True)
+NODO_CSV = Proceso("nodo_plantilla_csv", RAIZ_PROYECTO / "nodos_hijo" / "_plantilla_nodo", ("main.py",),
+                   mantener_ventana=True)
+NODO_POWERBI = Proceso("nodo_powerbi_viki", RAIZ_PROYECTO / "nodos_hijo" / "nodo_powerbi_viki", ("main.py",),
+                       mantener_ventana=True)
 DASHBOARD = Proceso("dashboard", RAIZ_PROYECTO, ("-m", "streamlit", "run", "dashboard/app.py"))
 # Al detener, el healthchecker va primero para que no relance al padre.
 ORDEN_DETENCION = ("healthchecker", "nodo_excel_cumplimiento", "nodo_plantilla_csv", "nodo_powerbi_viki",
@@ -66,18 +73,32 @@ ORDEN_DETENCION = ("healthchecker", "nodo_excel_cumplimiento", "nodo_plantilla_c
 
 # ---------------------------------------------------------------- procesos
 
-def proceso_propio(pid: int | None) -> psutil.Process | None:
-    """El proceso con ese PID si sigue vivo y es uno de los nuestros."""
+def _es_propio(proceso: psutil.Process) -> bool:
+    try:
+        linea = " ".join(proceso.cmdline())
+        return proceso.is_running() and any(script in linea for script in SCRIPTS_PROPIOS)
+    except psutil.Error:
+        return False
+
+
+def proceso_propio(pid: int | None, contar_ventana_abierta: bool = False) -> psutil.Process | None:
+    """El proceso con ese PID si sigue vivo y es uno de los nuestros.
+
+    Un nodo lanzado con 'cmd /k' deja la consola abierta al terminar: esa consola solo cuenta como
+    "viva" si su Python sigue corriendo (o si contar_ventana_abierta=True, para poder cerrarla).
+    """
     if not pid:
         return None
     try:
         proceso = psutil.Process(pid)
-        linea = " ".join(proceso.cmdline())
-        if proceso.is_running() and any(script in linea for script in SCRIPTS_PROPIOS):
-            return proceso
+        if not _es_propio(proceso):
+            return None
+        if proceso.name().lower() == "cmd.exe" and not contar_ventana_abierta:
+            hijos = proceso.children(recursive=True)
+            return proceso if any(_es_propio(hijo) for hijo in hijos) else None
+        return proceso
     except psutil.Error:
-        pass
-    return None
+        return None
 
 
 def leer_pid(ruta: Path) -> int | None:
@@ -94,8 +115,14 @@ def lanzar(proceso: Proceso, con_ventana: bool, extra: tuple[str, ...] = ()) -> 
     else:
         banderas = 0
     salida = None if con_ventana else subprocess.DEVNULL
-    hijo = subprocess.Popen([sys.executable, *proceso.argumentos, *extra], cwd=proceso.carpeta,
-                            creationflags=banderas, stdin=subprocess.DEVNULL, stdout=salida, stderr=salida)
+    comando: list[str] | str = [sys.executable, *proceso.argumentos, *extra]
+    entrada = subprocess.DEVNULL
+    if con_ventana and proceso.mantener_ventana and os.name == "nt":
+        # cmd /k: la consola queda abierta cuando el nodo termina, para leer qué pasó.
+        comando = f'cmd.exe /k "title {proceso.nombre} & {subprocess.list2cmdline(comando)}"'
+        entrada = None
+    hijo = subprocess.Popen(comando, cwd=proceso.carpeta, creationflags=banderas, stdin=entrada,
+                            stdout=salida, stderr=salida)
     print(f"  - {proceso.nombre:26} iniciado (pid {hijo.pid})")
     return hijo.pid
 
@@ -149,7 +176,7 @@ def esperar_padre(ruta_pid: Path) -> bool:
 
 # ---------------------------------------------------------------- acciones
 
-def iniciar(todo: bool, con_ventana: bool, powerbi: bool) -> int:
+def iniciar(todo: bool, con_ventana: bool, powerbi: bool, excel: bool = True) -> int:
     activos = [nombre for nombre, pid in leer_registro().items() if proceso_propio(pid)]
     if activos:
         print(f"El sistema ya está en ejecución ({', '.join(activos)}). Usa 'python iniciar.py --detener' primero.")
@@ -157,8 +184,9 @@ def iniciar(todo: bool, con_ventana: bool, powerbi: bool) -> int:
 
     config_excel = cargar_json(NODO_EXCEL.carpeta / "config.json")
     ruta_excel = resolver_ruta(config_excel["ruta_archivo"])
-    print(f"Excel a leer: {ruta_excel}")
-    if not ruta_excel.exists():
+    if excel:
+        print(f"Excel a leer: {ruta_excel}")
+    if excel and not ruta_excel.exists():
         print("  AVISO: el archivo no existe. El nodo arrancará y lo reintentará cada "
               f"{config_excel['intervalo_segundos']} s. Revisa 'ruta_archivo' en {NODO_EXCEL.carpeta / 'config.json'}")
 
@@ -181,7 +209,8 @@ def iniciar(todo: bool, con_ventana: bool, powerbi: bool) -> int:
 
     # En segundo plano el healthchecker relanza al padre sin abrir ventanas.
     registro[HEALTHCHECKER.nombre] = lanzar(HEALTHCHECKER, con_ventana, () if con_ventana else ("--misma-consola",))
-    registro[NODO_EXCEL.nombre] = lanzar(NODO_EXCEL, con_ventana)
+    if excel:
+        registro[NODO_EXCEL.nombre] = lanzar(NODO_EXCEL, con_ventana)
     if powerbi:  # abre su propio navegador; la primera vez hay que iniciar sesión en él
         registro[NODO_POWERBI.nombre] = lanzar(NODO_POWERBI, con_ventana)
     if todo:
@@ -205,7 +234,7 @@ def detener() -> int:
     registro[PADRE.nombre + " (actual)"] = leer_pid(ruta_pid_padre()) or 0  # pudo ser relanzado con otro PID
     detenidos = 0
     for nombre in (*ORDEN_DETENCION, PADRE.nombre + " (actual)"):
-        proceso = proceso_propio(registro.get(nombre))
+        proceso = proceso_propio(registro.get(nombre), contar_ventana_abierta=True)
         if proceso:
             terminar_arbol(proceso)
             print(f"  - {nombre:26} detenido (pid {proceso.pid})")
@@ -236,12 +265,15 @@ def main() -> int:
     parser.add_argument("--todo", action="store_true", help="Incluye el nodo CSV de ejemplo y el dashboard")
     parser.add_argument("--sin-ventanas", action="store_true", help="Ejecuta todo en segundo plano")
     parser.add_argument("--powerbi", action="store_true", help="Incluye el nodo que lee el reporte Power BI de VIKI")
+    parser.add_argument("--solo-powerbi", action="store_true",
+                        help="Padre + healthchecker + nodo Power BI, sin el nodo del Excel")
     args = parser.parse_args()
     if args.detener:
         return detener()
     if args.estado:
         return mostrar_estado()
-    return iniciar(args.todo, con_ventana=not args.sin_ventanas, powerbi=args.powerbi)
+    return iniciar(args.todo, con_ventana=not args.sin_ventanas, powerbi=args.powerbi or args.solo_powerbi,
+                   excel=not args.solo_powerbi)
 
 
 if __name__ == "__main__":

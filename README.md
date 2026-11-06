@@ -102,6 +102,7 @@ Antes de arrancar muestra qué Excel va a leer y avisa si la ruta no existe.
 | `python iniciar.py --todo` | Además el nodo CSV de ejemplo y el dashboard (`http://localhost:8501`) |
 | `python iniciar.py --sin-ventanas` | Todo en segundo plano; la salida queda en `logs/` |
 | `python iniciar.py --powerbi` | Además el nodo que lee el reporte Power BI de VIKI (abre un navegador) |
+| `python iniciar.py --solo-powerbi` | Padre + healthchecker + nodo Power BI, sin el Excel (= doble clic en **`iniciar_powerbi.bat`**) |
 | `python iniciar.py --estado` | Qué procesos están vivos |
 | `python iniciar.py --detener` | Apaga todo (primero el healthchecker, para que no relance al padre) |
 
@@ -195,8 +196,14 @@ KPI con nombre y los envía al padre como cualquier otro nodo.
 **Cómo funciona una lectura**
 
 1. [navegador.py](nodos_hijo/nodo_powerbi_viki/navegador.py) abre el reporte con Selenium en Edge,
-   **visible** (se ve cómo abre y lee el reporte).
-2. Espera a que aparezcan los visuales y a que sus textos dejen de cambiar (el reporte terminó de cargar).
+   **visible** (se ve cómo abre y lee el reporte). En cada lectura siguiente **recarga la página** (F5), porque
+   el tablero solo se actualiza al recargar: por defecto cada **15 s** (`intervalo_segundos`, contado desde el
+   inicio de la lectura).
+2. Espera a que el embed termine de cargar: que existan los visuales, que desaparezca la pantalla de carga de
+   Power BI (`pbi-svg-loading`), que ningún visual tenga su spinner "Cargando objetos visuales..."
+   (`.powerbi-spinner.shown`), que aparezca el texto "Actualizado:" y que los textos no cambien durante
+   `segundos_estable`. Cada 5 s escribe en la consola en qué va la carga. Si en `espera_carga_segundos` no
+   termina, el servicio se da por caído.
    Si la página sale del sitio del reporte (login de Microsoft **o el login corporativo federado**), espera a
    que inicies sesión a mano en esa ventana.
 3. Inyecta [script_captura.js](nodos_hijo/nodo_powerbi_viki/script_captura.js): es la misma inyección que se
@@ -237,6 +244,11 @@ vencida o no iniciada a tiempo, reporte que no carga o un error inesperado → e
 `estados_nodos`, escribe una alerta `servicio_caido` (P1) en `salida/alertas_powerautomate.json` y el
 healthchecker muestra `NODO CAÍDO`. Para volver a leer, se corrige el problema y se inicia el nodo de nuevo.
 
+**Ver qué pasa por detrás**: doble clic en **`iniciar_powerbi.bat`** (raíz) abre una consola por proceso; la
+de `nodo_powerbi_viki` muestra cada recarga, la espera de carga, la inyección y los envíos al padre, y **no se
+cierra** si el nodo se cae (para leer el error). Para correr solo el nodo en una consola:
+**`nodos_hijo\nodo_powerbi_viki\ver_nodo_powerbi.bat`**. Todo queda también en `logs/nodo_powerbi_viki.log`.
+
 **Primera vez** (iniciar sesión y verificar):
 
 ```bash
@@ -255,8 +267,9 @@ y lo que quedó sin interpretar. Con una captura guardada no abre el navegador:
 
 | Línea | Qué controla |
 |---|---|
-| `"intervalo_segundos": 1800` | Cada cuánto se vuelve a leer el reporte (1800 = 30 min) |
-| `"espera_carga_segundos": 90` | Máximo de espera, en cada lectura, a que el reporte termine de cargar |
+| `"intervalo_segundos": 15` | Cada cuánto se recarga la página y se vuelve a inyectar el script |
+| `"espera_carga_segundos": 90` | Máximo de espera, en cada lectura, a que el embed termine de cargar |
+| `"texto_reporte_listo": "Actualizado"` | Texto que debe aparecer para dar el tablero por cargado |
 | `"navegador_visible": true` | Ver el navegador trabajando (`false` = oculto, solo cuando la sesión ya está iniciada) |
 
 **KPI que genera** (todos con canal `VIKI`):

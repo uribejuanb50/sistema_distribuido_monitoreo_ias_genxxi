@@ -3,13 +3,15 @@
   "nodo_id": "nodo_powerbi_viki",
   "url_reporte": "https://app.powerbi.com/groups/me/reports/4964bcb3-33b1-42c4-a16f-99223f17c8be/461a7eb191670baa83a2?ctid=46bb22b8-4c2c-40ff-8360-7b6334821279&experience=power-bi",
 
-  "_intervalo_segundos": "TIEMPO DE LECTURA: cada cuántos segundos se vuelve a leer el reporte (1800 = cada 30 minutos).",
-  "intervalo_segundos": 1800,
+  "_intervalo_segundos": "TIEMPO DE LECTURA: cada cuántos segundos se RECARGA la página y se vuelve a inyectar el script (el tablero solo se actualiza al recargar). Se cuenta desde el inicio de cada lectura: si cargar tarda más, la siguiente recarga es inmediata.",
+  "intervalo_segundos": 15,
 
-  "_espera_carga_segundos": "Máximo que se espera, en cada lectura, a que el reporte termine de dibujarse.",
+  "_espera_carga_segundos": "Máximo que se espera, en cada lectura, a que el embed termine de cargar (sin pantalla de carga ni visuales con 'Cargando...'). Si se pasa, el servicio se da por caído.",
   "espera_carga_segundos": 90,
+  "_texto_reporte_listo": "El tablero se da por cargado cuando aparece este texto (la fecha 'Actualizado: ...'). null = no se exige.",
+  "texto_reporte_listo": "Actualizado",
   "espera_inicio_sesion_segundos": 300,
-  "segundos_estable": 4,
+  "segundos_estable": 3,
   "minimo_visuales": 30,
 
   "_cerrar_ante_error": "true = si el servicio falla (navegador, sesión, reporte que no carga) se avisa al padre que se cayó y el nodo se CIERRA.",

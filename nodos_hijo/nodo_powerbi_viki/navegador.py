@@ -15,6 +15,14 @@ Nota: desde la versión 136 de Edge/Chrome, el puerto de depuración NO funciona
 perfil principal del navegador (el de todos los días). Por eso ambos modos usan una
 carpeta de perfil aparte: inicias sesión ahí una vez y queda guardada.
 
+Cada lectura RECARGA la página (el tablero solo se actualiza al recargar) y espera a que
+el embed termine de cargar antes de inyectar el script:
+  1. que existan los visuales ('visual-container'),
+  2. que desaparezca la pantalla de carga de Power BI (el logo animado, 'pbi-svg-loading'),
+  3. que ningún visual tenga su spinner "Cargando objetos visuales..." ('.powerbi-spinner.shown'),
+  4. que ya aparezca el texto "Actualizado:" (la fecha de los datos),
+  5. y que los textos no cambien durante 'segundos_estable'.
+
 Cualquier problema del navegador (no abre, se cerró la ventana, la sesión venció, el
 reporte no carga) se lanza como ErrorServicio: main.py avisa al padre y cierra el nodo.
 """
@@ -36,7 +44,23 @@ from comun.extractor_base import ErrorServicio
 log = logging.getLogger(__name__)
 
 SCRIPT_CAPTURA = (Path(__file__).resolve().parent / "script_captura.js").read_text(encoding="utf-8")
-SCRIPT_CONTAR = "return document.querySelectorAll('visual-container').length;"
+# Estado de carga del embed (marcadores tomados del HTML real del tablero).
+SCRIPT_ESTADO_CARGA = """
+const visuales = Array.from(document.querySelectorAll('visual-container'));
+const cargador = document.querySelector('pbi-svg-loading');
+let pantallaCarga = false;
+if (cargador) {
+    const estilo = getComputedStyle(cargador);
+    pantallaCarga = estilo.visibility !== 'hidden' && estilo.display !== 'none';
+}
+const texto = arguments[0];
+return {
+    visuales: visuales.length,
+    pantalla_carga: pantallaCarga,
+    visuales_cargando: document.querySelectorAll('visual-container .powerbi-spinner.shown').length,
+    texto_listo: !texto || visuales.some((v) => (v.textContent || '').includes(texto)),
+};
+"""
 # "Firma" del contenido: si no cambia durante unos segundos, el reporte terminó de cargar.
 SCRIPT_FIRMA = ("const v = document.querySelectorAll('visual-container');"
                 "return v.length + ':' + Array.from(v).map((x) => x.innerText).join('|');")
@@ -65,7 +89,7 @@ class NavegadorPowerBI:
                  visible: bool = True, espera_carga_segundos: float = 90, espera_inicio_sesion_segundos: float = 300,
                  segundos_estable: float = 4, minimo_visuales: int = 20, ancho: int = 1920, alto: int = 1080,
                  modo_sesion: str = "perfil_propio", puerto_depuracion: int = 9222,
-                 ruta_driver: Path | None = None) -> None:
+                 ruta_driver: Path | None = None, texto_reporte_listo: str | None = "Actualizado") -> None:
         if navegador not in ("edge", "chrome"):
             raise ValueError(f"Navegador no soportado: {navegador!r} (usa 'edge' o 'chrome')")
         if modo_sesion not in MODOS_SESION:
@@ -82,6 +106,8 @@ class NavegadorPowerBI:
         self.modo_sesion = modo_sesion
         self.puerto_depuracion = puerto_depuracion
         self.ruta_driver = ruta_driver
+        self.texto_listo = texto_reporte_listo
+        self.lecturas = 0
         self.host_reporte = urlparse(url).hostname or ""   # app.powerbi.com ("" para páginas locales)
         self._driver: webdriver.Remote | None = None
         self._pestana: str | None = None                   # pestaña propia en el modo "conectar"
@@ -89,11 +115,20 @@ class NavegadorPowerBI:
     def capturar(self) -> dict[str, Any]:
         """Abre (o recarga) el reporte y devuelve la captura cruda de todos los visuales."""
         try:
+            self.lecturas += 1
             if self._driver is None:
                 self._driver = self._crear_driver()
-            log.info("Abriendo el reporte de Power BI: %s", self.url)
-            self._driver.get(self.url)
+                log.info("Lectura #%d: abriendo el reporte de Power BI: %s", self.lecturas, self.url)
+                self._driver.get(self.url)
+            elif self._en_inicio_de_sesion() or not self._driver.current_url.startswith(("http", "file")):
+                log.info("Lectura #%d: volviendo a abrir el reporte", self.lecturas)
+                self._driver.get(self.url)
+            else:
+                log.info("Lectura #%d: recargando la página (el tablero solo se actualiza al recargar)", self.lecturas)
+                self._driver.refresh()
+            inicio = time.monotonic()
             self._esperar_reporte()
+            log.info("Tablero cargado en %.1f s", time.monotonic() - inicio)
             log.info("Inyectando el script de captura en el reporte...")
             visuales = self._driver.execute_script(SCRIPT_CAPTURA, None)
             if not isinstance(visuales, list):
@@ -180,45 +215,61 @@ class NavegadorPowerBI:
         return host != self.host_reporte
 
     def _esperar_reporte(self) -> None:
-        """Espera a que aparezcan los visuales (y, si hace falta, a que inicies sesión)."""
+        """Espera a que el embed termine de cargar (y, si hace falta, a que inicies sesión)."""
         limite = time.monotonic() + self.espera_carga
-        aviso_dado = False
-        while (cantidad := self._driver.execute_script(SCRIPT_CONTAR)) < self.minimo_visuales:
+        aviso_login = False
+        ultimo_aviso = 0.0
+        firma_anterior, estable_desde = None, 0.0
+        while True:
+            ahora = time.monotonic()
             if self._en_inicio_de_sesion():
                 if not self.visible:
                     raise ErrorServicio("El reporte pide iniciar sesión y el navegador está oculto: "
                                         "pon 'navegador_visible': true en config.json")
-                if not aviso_dado:
+                if not aviso_login:
                     log.warning("El reporte pide iniciar sesión (%s): hazlo A MANO EN LA VENTANA DEL NAVEGADOR. "
                                 "Esperando hasta %d s...", urlparse(self._driver.current_url).hostname,
                                 self.espera_inicio_sesion)
-                    limite = time.monotonic() + self.espera_inicio_sesion
-                    aviso_dado = True
-                if time.monotonic() > limite:
+                    limite = ahora + self.espera_inicio_sesion
+                    aviso_login = True
+                if ahora > limite:
                     raise ErrorServicio(f"No se inició sesión en {self.espera_inicio_sesion:.0f} s: la sesión venció "
                                         "o nadie la inició en la ventana del navegador")
-            elif time.monotonic() > limite:
-                raise ErrorServicio(
-                    f"El reporte no cargó a tiempo: {cantidad} visuales de {self.minimo_visuales} esperados "
-                    f"(página: '{self._driver.title}', {self._driver.current_url}). ¿Tienes acceso al reporte? "
-                    "Si tu red es lenta, sube 'espera_carga_segundos'")
-            time.sleep(1)
+                time.sleep(1)
+                continue
+            if aviso_login:
+                log.info("Sesión iniciada: el perfil la recordará para las próximas lecturas")
+                limite = ahora + self.espera_carga
+                aviso_login = False
 
-        if aviso_dado:
-            log.info("Sesión iniciada: la próxima vez el perfil la recordará")
-        log.info("Reporte visible (%d visuales). Esperando a que terminen de cargar los datos...", cantidad)
-        limite = time.monotonic() + self.espera_carga
-        firma_anterior, estable_desde = None, time.monotonic()
-        while True:
-            firma = self._driver.execute_script(SCRIPT_FIRMA)
-            ahora = time.monotonic()
-            if firma != firma_anterior:
-                firma_anterior, estable_desde = firma, ahora
-            elif ahora - estable_desde >= self.segundos_estable:
-                return
+            estado = self._driver.execute_script(SCRIPT_ESTADO_CARGA, self.texto_listo)
+            listo = (estado["visuales"] >= self.minimo_visuales and not estado["pantalla_carga"]
+                     and estado["visuales_cargando"] == 0 and estado["texto_listo"])
+            if listo:
+                firma = self._driver.execute_script(SCRIPT_FIRMA)
+                if firma != firma_anterior:
+                    firma_anterior, estable_desde = firma, ahora
+                elif ahora - estable_desde >= self.segundos_estable:
+                    return
+            else:
+                firma_anterior = None
+
+            if ahora - ultimo_aviso >= 5:
+                log.info("Esperando el tablero: %s | %d/%d visuales | %d visuales con 'Cargando...' | texto '%s' %s",
+                         "pantalla de carga de Power BI" if estado["pantalla_carga"] else "sin pantalla de carga",
+                         estado["visuales"], self.minimo_visuales, estado["visuales_cargando"], self.texto_listo,
+                         "visible" if estado["texto_listo"] else "aún no aparece")
+                ultimo_aviso = ahora
             if ahora > limite:
-                log.warning("Los datos siguen cambiando tras %d s: se captura de todos modos", self.espera_carga)
-                return
+                if listo:
+                    log.warning("Los datos siguen cambiando tras %d s: se captura de todos modos", self.espera_carga)
+                    return
+                raise ErrorServicio(
+                    f"El tablero no terminó de cargar en {self.espera_carga:.0f} s (visuales: {estado['visuales']}, "
+                    f"pantalla de carga: {'sí' if estado['pantalla_carga'] else 'no'}, visuales cargando: "
+                    f"{estado['visuales_cargando']}, texto '{self.texto_listo}': "
+                    f"{'sí' if estado['texto_listo'] else 'no'}; página '{self._driver.title}'). "
+                    "¿Tienes acceso al reporte? Si tu red es lenta, sube 'espera_carga_segundos'")
             time.sleep(0.5)
 
     def _leer_tablas_completas(self, visuales: list[dict[str, Any]]) -> None:
