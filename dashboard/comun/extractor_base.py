@@ -12,7 +12,17 @@ from comun.contrato import Observacion
 
 
 class ErrorExtraccion(Exception):
-    """Error controlado al leer la fuente (no existe, está bloqueada, formato inesperado...)."""
+    """Error controlado al leer la fuente (no existe, está bloqueada, formato inesperado...).
+
+    El nodo sigue vivo: avisa al padre que está "degradado" y reintenta en el próximo ciclo.
+    """
+
+
+class ErrorServicio(ErrorExtraccion):
+    """El servicio de la fuente se cayó (navegador cerrado, sesión vencida, reporte que no carga...).
+
+    Si el nodo tiene "cerrar_ante_error": true, avisa al padre que está "caido" y se cierra.
+    """
 
 
 class ExtractorBase(ABC):
@@ -29,6 +39,13 @@ class ExtractorBase(ABC):
 
         Debe lanzar ErrorExtraccion ante problemas esperables de la fuente.
         """
+
+    def captura_cruda(self) -> dict | None:
+        """Opcional: los valores crudos de la última lectura (payload de un mensaje "captura").
+
+        main.py la envía al padre después de cada extracción, aunque la interpretación falle.
+        """
+        return None
 
     def cerrar(self) -> None:
         """Libera recursos (navegador, conexiones). main.py lo llama al terminar."""

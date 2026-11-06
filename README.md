@@ -3,7 +3,7 @@
 Sistema distribuido (procesos independientes que se comunican con **ZeroMQ PUB/SUB**) que:
 
 1. **Nodos hijos** leen fuentes de datos (Excel, CSV, ...) y publican observaciones con un formato JSON común.
-2. El **nodo padre** recibe, guarda todo el historial en **SQLite**, analiza si el cambio es significativo
+2. El **nodo padre** recibe (KPI, números crudos y el estado de cada hijo), guarda todo el historial en **SQLite**, analiza si el cambio es significativo
    (reglas + estadística) y, si lo es, escribe `salida/alertas_powerautomate.json`.
 3. **Power Automate** se dispara cuando ese archivo cambia y envía la notificación (p. ej. a Teams).
 4. Un **healthchecker** vigila al padre por sus latidos y lo relanza si se cae.
@@ -194,21 +194,48 @@ KPI con nombre y los envía al padre como cualquier otro nodo.
 
 **Cómo funciona una lectura**
 
-1. [navegador.py](nodos_hijo/nodo_powerbi_viki/navegador.py) abre el reporte en Edge con un **perfil
-   propio** guardado en `%LOCALAPPDATA%` (fuera de OneDrive, porque guarda la sesión iniciada).
+1. [navegador.py](nodos_hijo/nodo_powerbi_viki/navegador.py) abre el reporte con Selenium en Edge,
+   **visible** (se ve cómo abre y lee el reporte).
 2. Espera a que aparezcan los visuales y a que sus textos dejen de cambiar (el reporte terminó de cargar).
-3. Inyecta [script_captura.js](nodos_hijo/nodo_powerbi_viki/script_captura.js): devuelve cada visual con
-   su número de bloque, posición y textos. Las tablas se leen por sus **roles de accesibilidad** y se
-   desplazan para leer todas las filas.
-4. [extraccion.py](nodos_hijo/nodo_powerbi_viki/extraccion.py) aplica el mapa
-   ([mapa_reporte.json](nodos_hijo/nodo_powerbi_viki/mapa_reporte.json)) y comprueba las
-   **identidades del reporte**. Si alguna falla, el diseño cambió y **no se envía nada**:
+   Si la página sale del sitio del reporte (login de Microsoft **o el login corporativo federado**), espera a
+   que inicies sesión a mano en esa ventana.
+3. Inyecta [script_captura.js](nodos_hijo/nodo_powerbi_viki/script_captura.js): es la misma inyección que se
+   usaba en la consola (`visual-container` → título → textos de `svg text, .pivotTableCellWrap, ...`),
+   adaptada para que devuelva los datos a Python (`return` en vez de `console.log`) y con el número de bloque
+   y las filas de las tablas (roles de accesibilidad), que el selector original no alcanza.
+4. Envía al padre los **números crudos** (mensaje `captura`: bloque, sección, valores y cada valor ya
+   convertido a número). Llegan siempre, aunque el paso 5 falle.
+5. [extraccion.py](nodos_hijo/nodo_powerbi_viki/extraccion.py) aplica el mapa
+   ([mapa_reporte.json](nodos_hijo/nodo_powerbi_viki/mapa_reporte.json)), comprueba las
+   **identidades del reporte** y envía los KPI (mensaje `observaciones`). Si alguna identidad falla, el diseño
+   cambió: no se envían KPI y el nodo avisa al padre que está `degradado` (sigue leyendo):
    - total = presencial + telefónico, en los 7 conteos;
    - acciones por sesión = acciones / sesiones;
    - % usabilidad = sesiones con llamada / llamadas;
    - las semanas suman el total;
    - la fila Total de cada tabla coincide con las tarjetas;
    - la serie del gráfico de antigüedad suma el total de acciones.
+
+**Sesión (sin credenciales en el código)**
+
+El programa nunca escribe usuarios ni contraseñas. Inicias sesión **tú, a mano, una sola vez** en la ventana
+que abre Selenium y queda guardada en un perfil propio (`%LOCALAPPDATA%\sistema_recoleccion_xxi\...`, fuera de
+OneDrive). Desde Edge 136 el navegador no deja automatizar su perfil principal (el de todos los días), por eso
+la sesión se guarda en esa carpeta aparte. Dos modos en `config.json`:
+
+| `modo_sesion` | Cómo |
+|---|---|
+| `perfil_propio` (por defecto) | Selenium abre su Edge con ese perfil. La 1.ª vez inicias sesión en la ventana; después entra directo. |
+| `conectar` | Abres Edge con [abrir_edge_sesion.bat](nodos_hijo/nodo_powerbi_viki/abrir_edge_sesion.bat), inicias sesión y lo dejas abierto. El nodo se conecta a ese Edge, lee en una pestaña nueva y al terminar cierra solo esa pestaña. |
+
+Si la red de la empresa no deja que Selenium descargue `msedgedriver`, descárgalo (misma versión que tu Edge)
+y pon su ruta en `"ruta_driver"`.
+
+**Si el servicio se cae** (`"cerrar_ante_error": true`): navegador que no abre, ventana cerrada, sesión
+vencida o no iniciada a tiempo, reporte que no carga o un error inesperado → el nodo envía al padre el estado
+`caido` con el motivo, cierra el navegador y **se cierra** (código de salida 1). El padre lo guarda en
+`estados_nodos`, escribe una alerta `servicio_caido` (P1) en `salida/alertas_powerautomate.json` y el
+healthchecker muestra `NODO CAÍDO`. Para volver a leer, se corrige el problema y se inicia el nodo de nuevo.
 
 **Primera vez** (iniciar sesión y verificar):
 
@@ -252,7 +279,9 @@ mes anterior; TMO con `sentido_favorable: bajar`. Las metas van en `"metas"` del
 
 ## Contrato JSON común
 
-Todos los hijos envían `{"header": {...}, "payload": {"observaciones": [...]}}`. El header dice **qué nodo**
+Todos los hijos envían `{"header": {...}, "payload": {...}}`. `header.tipo_mensaje` dice qué trae el payload:
+`observaciones` (KPI), `captura` (números crudos por bloque, se guardan en `capturas` y `capturas_visuales`)
+o `estado` (`activo`, `degradado`, `caido`, `detenido`; se guardan en `estados_nodos`). El header dice **qué nodo**
 generó la información (`nodo_id`), de qué fuente, cuándo y con qué número de secuencia. Cada observación
 distingue la **fecha de referencia** (a qué periodo corresponde) de la **fecha de captura** (cuándo se leyó).
 Ver [comun/contrato.py](comun/contrato.py) y [comun/plantilla_mensaje.json](comun/plantilla_mensaje.json).
@@ -315,7 +344,7 @@ No hay URLs de webhook ni credenciales en el código.
 
 ## Pruebas
 
-`python -m pytest -q` → **136 pruebas** que cubren: contrato (mensajes inválidos/malformados), extracción
+`python -m pytest -q` → **más de 150 pruebas** que cubren: mensajes de captura y de servicio caído (hijo que avisa y se cierra, alerta en el JSON), contrato (mensajes inválidos/malformados), extracción
 (bloques, columnas, acumulados, meses sin real, datos inconsistentes, archivo corrupto), reglas (caídas,
 subidas, cero, límites exactos de intervalos, meta, criticidad, tendencias, estabilidad, volatilidad, dato
 inusual, patrones), almacenamiento (duplicados, revisiones, JSON atómico), flujo del padre (no duplicar

@@ -2,6 +2,11 @@
 en un JSON las alertas significativas (ese archivo dispara el flujo de Power Automate).
 
 Orquestación (este archivo): red ⇄ guardado ⇄ pensamiento.
+Tipos de mensaje que recibe de los hijos (comun/contrato.py):
+- "observaciones": KPI -> se guardan y se analizan.
+- "captura": números crudos por bloque (p. ej. la inyección JS de Power BI) -> se guardan.
+- "estado": servicio del hijo. Si llega "caido" se escribe una alerta P1 en el JSON
+  (Power Automate avisa que el servicio se cayó) y se publica un evento al healthchecker.
 - guardado.py    -> historial en SQLite y archivo JSON de salida.
 - pensamiento.py -> reglas y estadística para decidir si un cambio es significativo.
 
@@ -47,6 +52,8 @@ class Estadisticas:
     observaciones_nuevas: int = 0
     alertas_emitidas: int = 0
     nodos_vistos: dict[str, str] = field(default_factory=dict)  # nodo_id -> último envío
+    estados_nodos: dict[str, str] = field(default_factory=dict)  # nodo_id -> activo/degradado/caido/detenido
+    capturas_recibidas: int = 0
 
 
 @dataclass
@@ -62,7 +69,7 @@ class ContextoPadre:
 
 
 def procesar_mensaje(cuerpo: bytes, ctx: ContextoPadre) -> None:
-    """Valida, guarda y analiza un mensaje de un nodo hijo."""
+    """Valida, guarda y analiza un mensaje de un nodo hijo (de cualquier tipo)."""
     try:
         mensaje = Mensaje.desde_bytes(cuerpo)
     except ErrorContrato as error:
@@ -75,7 +82,44 @@ def procesar_mensaje(cuerpo: bytes, ctx: ContextoPadre) -> None:
     if not ctx.almacen.registrar_mensaje(mensaje):
         log.info("Mensaje %s de %s ya procesado: se ignora", enc.id_mensaje, enc.nodo_id)
         return
+    if mensaje.tipo == "captura":
+        procesar_captura(mensaje, ctx)
+    elif mensaje.tipo == "estado":
+        procesar_estado(mensaje, ctx)
+    else:
+        procesar_observaciones(mensaje, ctx)
 
+
+def procesar_captura(mensaje: Mensaje, ctx: ContextoPadre) -> None:
+    """Guarda los números crudos que mandó el hijo (bloque -> valores)."""
+    enc, visuales = mensaje.encabezado, mensaje.contenido["visuales"]
+    ctx.estadisticas.capturas_recibidas += 1
+    numeros = sum(1 for v in visuales for n in v["numeros"] if n is not None)
+    nueva = ctx.almacen.guardar_captura(mensaje)
+    log.info("Captura #%d de %s: %d visuales, %d números (%s)", enc.secuencia, enc.nodo_id, len(visuales), numeros,
+             "guardada" if nueva else "sin cambios frente a la anterior")
+
+
+def procesar_estado(mensaje: Mensaje, ctx: ContextoPadre) -> None:
+    """Registra el estado del servicio del hijo. Si se cayó, genera una alerta para Power Automate."""
+    enc, contenido = mensaje.encabezado, mensaje.contenido
+    estado = contenido["estado"]
+    ctx.estadisticas.estados_nodos[enc.nodo_id] = estado
+    ctx.almacen.guardar_estado(mensaje)
+    ctx.notificar_evento({"tipo": "estado_nodo", "nodo_id": enc.nodo_id, "estado": estado,
+                          "motivo": contenido["motivo"], "enviado_en": enc.enviado_en})
+    if estado == "caido":
+        log.error("SERVICIO CAÍDO | nodo %s | %s", enc.nodo_id, contenido["motivo"])
+        ctx.pendientes.append(guardado.construir_alerta_servicio(mensaje))
+        vaciar_pendientes(ctx)
+    elif estado == "degradado":
+        log.warning("Nodo %s degradado: %s", enc.nodo_id, contenido["motivo"])
+    else:
+        log.info("Nodo %s %s: %s", enc.nodo_id, estado, contenido["motivo"])
+
+
+def procesar_observaciones(mensaje: Mensaje, ctx: ContextoPadre) -> None:
+    enc = mensaje.encabezado
     resultados = ctx.almacen.guardar_observaciones(mensaje)
     cambios = [r for r in resultados if r.estado != "repetida"]
     ctx.estadisticas.observaciones_nuevas += len(cambios)
@@ -130,7 +174,10 @@ def vaciar_pendientes(ctx: ContextoPadre) -> bool:
     ctx.estadisticas.alertas_emitidas += total
     log.info("JSON de salida actualizado: %s (%d alertas, lote %s)", ctx.ruta_json, total, id_lote)
     ctx.notificar_evento({"tipo": "json_actualizado", "id_lote": id_lote, "total_alertas": total,
-                          "kpis": sorted({a["kpi_id"] for a in ctx.pendientes}), "enviado_en": ahora_iso()})
+                          "kpis": sorted({a["kpi_id"] for a in ctx.pendientes if a.get("kpi_id")}),
+                          "servicios_caidos": sorted({a["nodo_origen"] for a in ctx.pendientes
+                                                      if a.get("tipo_alerta") == "servicio_caido"}),
+                          "enviado_en": ahora_iso()})
     ctx.pendientes.clear()
     return True
 
@@ -147,6 +194,8 @@ def crear_latido(ctx: ContextoPadre) -> dict[str, Any]:
         "alertas_emitidas": est.alertas_emitidas,
         "alertas_pendientes": len(ctx.pendientes),
         "nodos_vistos": est.nodos_vistos,
+        "estados_nodos": est.estados_nodos,
+        "capturas_recibidas": est.capturas_recibidas,
         "enviado_en": ahora_iso(),
     }
 
@@ -181,6 +230,7 @@ def main() -> int:
     ruta_pid.write_text(str(os.getpid()), encoding="utf-8")
 
     ctx = ContextoPadre(
+        estadisticas=Estadisticas(estados_nodos=almacen.estados_actuales()),
         almacen=almacen,
         configuracion=configuracion,
         ruta_json=resolver_ruta(config["ruta_json_salida"]),

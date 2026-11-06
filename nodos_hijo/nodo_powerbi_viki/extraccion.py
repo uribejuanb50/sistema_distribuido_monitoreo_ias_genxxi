@@ -431,6 +431,27 @@ class _Interprete:
 
 # ---------------------------------------------------------------- extractor del nodo
 
+def a_payload_captura(captura: Captura) -> dict[str, Any]:
+    """Captura -> payload del mensaje "captura" para el padre: los números crudos por bloque.
+
+    Es lo mismo que devolvía la inyección por consola ("Sección / Visual" y "Valores
+    Extraídos"), más el número de bloque y cada valor convertido a número (o null si no
+    es un número). Solo van los visuales con datos, igual que en la inyección original.
+    """
+    visuales = []
+    for visual in captura.visuales:
+        valores = list(visual.textos) or [celda for fila in visual.filas for celda in fila if celda]
+        if not valores or visual.bloque is None:
+            continue
+        visuales.append({
+            "bloque": visual.bloque,
+            "seccion": visual.titulo or f"Visual / Bloque {visual.bloque}",
+            "valores": valores,
+            "numeros": [a_numero(valor) for valor in valores],  # null si no es un número
+        })
+    return {"capturado_en": captura.capturado_en, "origen": captura.origen, "visuales": visuales}
+
+
 class ExtractorPowerBI(ExtractorBase):
     tipo_fuente = "powerbi"
 
@@ -443,19 +464,28 @@ class ExtractorPowerBI(ExtractorBase):
         self.ruta_captura = ruta_captura
         self.ruta_guardado = ruta_guardado
         self._ultimos_avisos: list[str] | None = None
+        self._ultima_captura: Captura | None = None
 
     @property
     def fuente(self) -> str:
         return f"captura {self.ruta_captura.name}" if self.ruta_captura else "reporte Power BI VIKI"
 
     def obtener_captura(self) -> Captura:
+        self._ultima_captura = None
         if self.ruta_captura is not None:
-            return cargar_captura(self.ruta_captura)
-        datos = self.navegador.capturar()
-        if self.ruta_guardado is not None:  # deja la última captura para revisarla con calibrar.py
-            self.ruta_guardado.parent.mkdir(parents=True, exist_ok=True)
-            self.ruta_guardado.write_text(json.dumps(datos, ensure_ascii=False, indent=1), encoding="utf-8")
-        return normalizar_captura(datos, self.navegador.url)
+            captura = cargar_captura(self.ruta_captura)
+        else:
+            datos = self.navegador.capturar()  # lanza ErrorServicio si el navegador o la sesión fallan
+            if self.ruta_guardado is not None:  # deja la última captura para revisarla con calibrar.py
+                self.ruta_guardado.parent.mkdir(parents=True, exist_ok=True)
+                self.ruta_guardado.write_text(json.dumps(datos, ensure_ascii=False, indent=1), encoding="utf-8")
+            captura = normalizar_captura(datos, self.navegador.url)
+        self._ultima_captura = captura
+        return captura
+
+    def captura_cruda(self) -> dict[str, Any] | None:
+        """Números crudos de la última lectura (main.py los envía al padre aunque el mapa falle)."""
+        return a_payload_captura(self._ultima_captura) if self._ultima_captura else None
 
     def extraer(self) -> list[Observacion]:
         resultado = interpretar(self.obtener_captura(), self.mapa)
@@ -465,8 +495,8 @@ class ExtractorPowerBI(ExtractorBase):
                 log.warning(aviso)
         if resultado.errores:
             raise ErrorExtraccion(f"La captura no pasó {len(resultado.errores)} validaciones (¿cambió el diseño del "
-                                  f"reporte?). No se envía nada. Revisa con calibrar.py. Primeras: "
-                                  + "; ".join(resultado.errores[:3]))
+                                  f"reporte?). Los números crudos sí se envían al padre, los KPI no. Revisa con "
+                                  "calibrar.py. Primeras: " + "; ".join(resultado.errores[:3]))
         log.info("Reporte actualizado al %s: %d observaciones, %d validaciones OK",
                  resultado.fecha_actualizacion, len(resultado.observaciones), len(resultado.validaciones))
         return resultado.observaciones
@@ -484,6 +514,7 @@ def crear_extractor(config: dict[str, Any]) -> ExtractorPowerBI:
     from navegador import NavegadorPowerBI  # Selenium solo se carga si se usa el navegador
 
     carpeta_perfil = config.get("carpeta_perfil_navegador")
+    ruta_driver = config.get("ruta_driver")
     navegador = NavegadorPowerBI(
         url=config["url_reporte"],
         carpeta_perfil=resolver_ruta(carpeta_perfil) if carpeta_perfil else None,
@@ -493,6 +524,9 @@ def crear_extractor(config: dict[str, Any]) -> ExtractorPowerBI:
         espera_inicio_sesion_segundos=config.get("espera_inicio_sesion_segundos", 300),
         segundos_estable=config.get("segundos_estable", 4),
         minimo_visuales=config.get("minimo_visuales", 20),
+        modo_sesion=config.get("modo_sesion", "perfil_propio"),
+        puerto_depuracion=config.get("puerto_depuracion", 9222),
+        ruta_driver=resolver_ruta(ruta_driver) if ruta_driver else None,
     )
     guardado = config.get("guardar_ultima_captura")
     return ExtractorPowerBI(mapa, navegador=navegador, ruta_guardado=resolver_ruta(guardado) if guardado else None)

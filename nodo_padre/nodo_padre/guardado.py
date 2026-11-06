@@ -1,12 +1,13 @@
 """Guardado del nodo padre.
 
 - Almacen: historial completo en SQLite (mensajes, observaciones con versiones,
-  evaluaciones y notificaciones emitidas).
+  evaluaciones, notificaciones emitidas, capturas crudas de los hijos y su estado).
 - escribir_json_salida: escribe el JSON que vigila Power Automate. Se escribe de forma
   "atómica" (archivo temporal + reemplazo) para que nunca se lea un archivo a medias.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
@@ -82,6 +83,40 @@ CREATE TABLE IF NOT EXISTS notificaciones (
     ruta_json         TEXT NOT NULL,
     estado_revision   TEXT NOT NULL DEFAULT 'pendiente'
 );
+
+-- Números crudos que manda un hijo (p. ej. la inyección JS de Power BI), bloque por bloque.
+-- Solo se guarda una captura cuando sus valores cambian frente a la anterior del mismo nodo.
+CREATE TABLE IF NOT EXISTS capturas (
+    id_mensaje        TEXT PRIMARY KEY REFERENCES mensajes(id_mensaje),
+    nodo_id           TEXT NOT NULL,
+    origen            TEXT NOT NULL,
+    capturado_en      TEXT NOT NULL,            -- cuándo la leyó el hijo
+    recibido_en       TEXT NOT NULL,
+    huella            TEXT NOT NULL,
+    n_visuales        INTEGER NOT NULL,
+    n_numeros         INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS capturas_visuales (
+    id_mensaje        TEXT NOT NULL REFERENCES capturas(id_mensaje),
+    bloque            INTEGER NOT NULL,         -- posición del visual en el reporte (desde 1)
+    seccion           TEXT NOT NULL,            -- título del visual o "Visual / Bloque N"
+    valores_json      TEXT NOT NULL,            -- textos tal cual: ["3.469", "8,6 %"]
+    numeros_json      TEXT NOT NULL,            -- convertidos: [3469.0, 8.6] (null si no es número)
+    PRIMARY KEY (id_mensaje, bloque)
+);
+
+-- Estado del servicio de cada hijo: activo, degradado, caido, detenido.
+CREATE TABLE IF NOT EXISTS estados_nodos (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_mensaje        TEXT NOT NULL REFERENCES mensajes(id_mensaje),
+    nodo_id           TEXT NOT NULL,
+    estado            TEXT NOT NULL,
+    motivo            TEXT NOT NULL,
+    detalle_json      TEXT NOT NULL,
+    enviado_en        TEXT NOT NULL,
+    recibido_en       TEXT NOT NULL
+);
 """
 
 
@@ -102,6 +137,14 @@ class Almacen:
         self._con.execute("PRAGMA journal_mode=WAL")
         self._con.execute("PRAGMA foreign_keys=ON")
         self._con.executescript(ESQUEMA)
+        self._migrar()
+
+    def _migrar(self) -> None:
+        """Bases creadas antes de los mensajes "captura" y "estado": se agrega la columna tipo_mensaje."""
+        columnas = {fila["name"] for fila in self._con.execute("PRAGMA table_info(mensajes)")}
+        if "tipo_mensaje" not in columnas:
+            with self._con:
+                self._con.execute("ALTER TABLE mensajes ADD COLUMN tipo_mensaje TEXT NOT NULL DEFAULT 'observaciones'")
 
     def cerrar(self) -> None:
         self._con.close()
@@ -114,9 +157,10 @@ class Almacen:
         try:
             with self._con:
                 self._con.execute(
-                    "INSERT INTO mensajes VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO mensajes (id_mensaje, nodo_id, tipo_fuente, fuente, version_esquema, secuencia, "
+                    "enviado_en, recibido_en, n_observaciones, tipo_mensaje) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     (enc.id_mensaje, enc.nodo_id, enc.tipo_fuente, enc.fuente, enc.version_esquema,
-                     enc.secuencia, enc.enviado_en, ahora_iso(), len(mensaje.observaciones)),
+                     enc.secuencia, enc.enviado_en, ahora_iso(), len(mensaje.observaciones), enc.tipo_mensaje),
                 )
         except sqlite3.IntegrityError:
             return False
@@ -170,6 +214,55 @@ class Almacen:
                                  (kpi_id,)).fetchone()
         return fila["f"]
 
+    # ------------------------------------------------------------ capturas crudas y estado de los hijos
+
+    def guardar_captura(self, mensaje: Mensaje) -> bool:
+        """Guarda los números crudos de un hijo. Devuelve False si son iguales a su captura anterior."""
+        enc, contenido = mensaje.encabezado, mensaje.contenido
+        visuales = contenido["visuales"]
+        huella = hashlib.sha1(json.dumps(visuales, sort_keys=True).encode("utf-8")).hexdigest()
+        anterior = self._con.execute(
+            "SELECT huella FROM capturas WHERE nodo_id = ? ORDER BY recibido_en DESC, rowid DESC LIMIT 1",
+            (enc.nodo_id,)).fetchone()
+        if anterior is not None and anterior["huella"] == huella:
+            return False
+        n_numeros = sum(1 for v in visuales for numero in v["numeros"] if numero is not None)
+        with self._con:
+            self._con.execute(
+                "INSERT INTO capturas VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (enc.id_mensaje, enc.nodo_id, contenido["origen"], contenido["capturado_en"], ahora_iso(), huella,
+                 len(visuales), n_numeros))
+            self._con.executemany(
+                "INSERT OR REPLACE INTO capturas_visuales VALUES (?, ?, ?, ?, ?)",
+                [(enc.id_mensaje, v["bloque"], v["seccion"], json.dumps(v["valores"], ensure_ascii=False),
+                  json.dumps(v["numeros"])) for v in visuales])
+        return True
+
+    def ultima_captura(self, nodo_id: str) -> dict[int, dict[str, Any]]:
+        """Última captura guardada de un nodo: bloque -> {seccion, valores, numeros}."""
+        filas = self._con.execute(
+            "SELECT v.* FROM capturas_visuales v WHERE v.id_mensaje = ("
+            "  SELECT id_mensaje FROM capturas WHERE nodo_id = ? ORDER BY recibido_en DESC, rowid DESC LIMIT 1) "
+            "ORDER BY v.bloque", (nodo_id,)).fetchall()
+        return {f["bloque"]: {"seccion": f["seccion"], "valores": json.loads(f["valores_json"]),
+                              "numeros": json.loads(f["numeros_json"])} for f in filas}
+
+    def guardar_estado(self, mensaje: Mensaje) -> None:
+        enc, contenido = mensaje.encabezado, mensaje.contenido
+        with self._con:
+            self._con.execute(
+                "INSERT INTO estados_nodos (id_mensaje, nodo_id, estado, motivo, detalle_json, enviado_en, "
+                "recibido_en) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (enc.id_mensaje, enc.nodo_id, contenido["estado"], contenido["motivo"],
+                 json.dumps(contenido["detalle"], ensure_ascii=False), enc.enviado_en, ahora_iso()))
+
+    def estados_actuales(self) -> dict[str, str]:
+        """nodo_id -> último estado informado por ese nodo."""
+        filas = self._con.execute(
+            "SELECT nodo_id, estado FROM estados_nodos e WHERE id = ("
+            "  SELECT MAX(id) FROM estados_nodos x WHERE x.nodo_id = e.nodo_id)").fetchall()
+        return {f["nodo_id"]: f["estado"] for f in filas}
+
     # ------------------------------------------------------------ evaluaciones y notificaciones
 
     def guardar_evaluacion(self, obs: Observacion, evaluacion: Evaluacion, id_observacion: int) -> int:
@@ -187,6 +280,8 @@ class Almacen:
         return self._con.execute("SELECT 1 FROM notificaciones WHERE clave = ?", (clave,)).fetchone() is not None
 
     def registrar_notificaciones(self, alertas: list[dict[str, Any]], id_lote: str, ruta_json: str) -> None:
+        """Registra las alertas de KPI notificadas (las de servicio quedan en estados_nodos)."""
+        alertas = [a for a in alertas if a.get("tipo_alerta", "kpi") == "kpi"]
         ahora = ahora_iso()
         with self._con:
             self._con.executemany(
@@ -203,6 +298,7 @@ def construir_alerta(obs: Observacion, evaluacion: Evaluacion, nodo_id: str,
                      id_evaluacion: int) -> dict[str, Any]:
     """Arma el registro de alerta que irá al JSON de salida."""
     return {
+        "tipo_alerta": "kpi",
         "clave_notificacion": f"{obs.kpi_id}|{obs.fecha_referencia}|{evaluacion.nivel_alerta}|{obs.huella()[:12]}",
         "id_evaluacion": id_evaluacion,
         "kpi_id": obs.kpi_id,
@@ -226,6 +322,27 @@ def construir_alerta(obs: Observacion, evaluacion: Evaluacion, nodo_id: str,
         "accion_recomendada": evaluacion.accion_recomendada,
         "detectado_en": ahora_iso(),
         "nodo_origen": nodo_id,
+        "estado_revision": "pendiente",
+    }
+
+
+def construir_alerta_servicio(mensaje: Mensaje) -> dict[str, Any]:
+    """Alerta para el JSON de Power Automate cuando un hijo avisa que su servicio se cayó."""
+    enc, contenido = mensaje.encabezado, mensaje.contenido
+    return {
+        "tipo_alerta": "servicio_caido",
+        "clave_notificacion": f"servicio|{enc.nodo_id}|{enc.id_mensaje}",
+        "kpi_id": None,
+        "nombre_kpi": f"Servicio del nodo {enc.nodo_id}",
+        "canal": enc.tipo_fuente,
+        "nivel_alerta": "alta",
+        "prioridad_revision": "P1",
+        "motivos": [f"El nodo {enc.nodo_id} ({enc.fuente}) se cayó y se cerró: {contenido['motivo']}"],
+        "detalle": contenido["detalle"],
+        "accion_recomendada": f"Revisar el error en logs/{enc.nodo_id}.log y volver a iniciar el nodo.",
+        "caido_en": enc.enviado_en,
+        "detectado_en": ahora_iso(),
+        "nodo_origen": enc.nodo_id,
         "estado_revision": "pendiente",
     }
 

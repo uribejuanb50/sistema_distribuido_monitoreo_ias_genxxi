@@ -12,8 +12,19 @@
   "segundos_estable": 4,
   "minimo_visuales": 30,
 
+  "_cerrar_ante_error": "true = si el servicio falla (navegador, sesión, reporte que no carga) se avisa al padre que se cayó y el nodo se CIERRA.",
+  "cerrar_ante_error": true,
+
   "navegador": "edge",
   "navegador_visible": true,
+  "_navegador_visible": "true = se ve cómo Selenium abre y lee el reporte. false (oculto) solo sirve cuando la sesión ya está guardada.",
+
+  "_modo_sesion": "perfil_propio = Selenium abre Edge con su perfil; la 1a vez inicias sesión a mano en esa ventana y queda guardada. conectar = se conecta al Edge que abriste con abrir_edge_sesion.bat (ya con tu sesión).",
+  "modo_sesion": "perfil_propio",
+  "puerto_depuracion": 9222,
+
+  "_ruta_driver": "null = Selenium descarga msedgedriver solo. Si la red de la empresa lo bloquea, pon la ruta del msedgedriver.exe (misma versión que tu Edge).",
+  "ruta_driver": null,
   "carpeta_perfil_navegador": null,
   "_carpeta_perfil_navegador": "null = %LOCALAPPDATA%/sistema_recoleccion_xxi/perfil_navegador_powerbi (fuera de OneDrive: guarda la sesión iniciada).",
 

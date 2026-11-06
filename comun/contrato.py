@@ -20,6 +20,18 @@ nodo padre exactamente este formato JSON:
 }
 
 Ver comun/plantilla_mensaje.json para un ejemplo completo.
+
+Además de "observaciones" hay dos tipos de mensaje más (mismo header, otro payload):
+
+- "captura": los números CRUDOS que leyó el nodo, bloque por bloque, tal como salen de
+  la inyección JS en Power BI. Llegan aunque el mapa no los haya podido interpretar.
+    "payload": {"capturado_en": "...", "origen": "<url>",
+                "visuales": [{"bloque": 59, "seccion": "Visual / Bloque 59",
+                              "valores": ["3.469"], "numeros": [3469.0]}, ...]}
+
+- "estado": cómo está el servicio del nodo. "caido" = el nodo se cerró por un error.
+    "payload": {"estado": "caido", "motivo": "El reporte pide iniciar sesión...",
+                "detalle": {...}}
 """
 from __future__ import annotations
 
@@ -34,7 +46,10 @@ from typing import Any
 VERSION_ESQUEMA = "1.0"
 TIPOS_PERIODO = frozenset({"diario", "semanal", "mensual", "acumulado"})
 UNIDADES = frozenset({"porcentaje", "puntos", "unidades", "segundos"})
-TIPOS_MENSAJE = frozenset({"observaciones"})
+TIPOS_MENSAJE = frozenset({"observaciones", "captura", "estado"})
+# activo: leyendo bien · degradado: lee pero hay un problema con los datos (sigue vivo)
+# caido: error del servicio, el nodo se cerró · detenido: lo cerró el usuario (Ctrl+C)
+ESTADOS_NODO = frozenset({"activo", "degradado", "caido", "detenido"})
 
 
 class ErrorContrato(ValueError):
@@ -142,18 +157,72 @@ class Encabezado:
             raise ErrorContrato(f"'secuencia' debe ser un entero >= 0 (recibido: {self.secuencia!r})")
 
 
+def _validar_captura(datos: Any) -> dict[str, Any]:
+    if not isinstance(datos, dict) or not isinstance(datos.get("visuales"), list):
+        raise ErrorContrato("'payload.visuales' debe ser una lista")
+    visuales = []
+    for posicion, visual in enumerate(datos["visuales"], start=1):
+        nombre = f"visuales[{posicion}]"
+        if not isinstance(visual, dict):
+            raise ErrorContrato(f"'{nombre}' debe ser un objeto JSON")
+        bloque = visual.get("bloque")
+        if isinstance(bloque, bool) or not isinstance(bloque, int) or bloque < 1:
+            raise ErrorContrato(f"'{nombre}.bloque' debe ser un entero >= 1 (recibido: {bloque!r})")
+        _exigir_texto(f"{nombre}.seccion", visual.get("seccion"))
+        valores = visual.get("valores")
+        if not isinstance(valores, list) or not all(isinstance(v, str) for v in valores):
+            raise ErrorContrato(f"'{nombre}.valores' debe ser una lista de textos")
+        numeros = visual.get("numeros", [])
+        if not isinstance(numeros, list):
+            raise ErrorContrato(f"'{nombre}.numeros' debe ser una lista")
+        for numero in numeros:
+            _exigir_numero(f"{nombre}.numeros", numero, opcional=True)
+        visuales.append({"bloque": bloque, "seccion": visual["seccion"], "valores": valores, "numeros": numeros})
+    return {"capturado_en": str(datos.get("capturado_en") or ahora_iso()),
+            "origen": str(datos.get("origen") or ""), "visuales": visuales}
+
+
+def _validar_estado(datos: Any) -> dict[str, Any]:
+    if not isinstance(datos, dict):
+        raise ErrorContrato("'payload' de un estado debe ser un objeto JSON")
+    if datos.get("estado") not in ESTADOS_NODO:
+        raise ErrorContrato(f"'estado' inválido: {datos.get('estado')!r} (se espera {sorted(ESTADOS_NODO)})")
+    _exigir_texto("motivo", datos.get("motivo"))
+    detalle = datos.get("detalle", {})
+    if not isinstance(detalle, dict):
+        raise ErrorContrato("'detalle' debe ser un objeto JSON")
+    return {"estado": datos["estado"], "motivo": datos["motivo"], "detalle": detalle}
+
+
 @dataclass(frozen=True)
 class Mensaje:
-    """Mensaje completo: header + lista de observaciones."""
+    """Mensaje completo: header + payload.
+
+    - tipo "observaciones": `observaciones` trae los datos y `contenido` va vacío.
+    - tipos "captura" y "estado": `observaciones` va vacío y `contenido` es el payload.
+    """
 
     encabezado: Encabezado
-    observaciones: tuple[Observacion, ...]
+    observaciones: tuple[Observacion, ...] = ()
+    contenido: dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        tipo = self.encabezado.tipo_mensaje
+        if tipo == "captura":
+            object.__setattr__(self, "contenido", _validar_captura(self.contenido))
+        elif tipo == "estado":
+            object.__setattr__(self, "contenido", _validar_estado(self.contenido))
+
+    @property
+    def tipo(self) -> str:
+        return self.encabezado.tipo_mensaje
 
     def a_dict(self) -> dict[str, Any]:
-        return {
-            "header": asdict(self.encabezado),
-            "payload": {"observaciones": [obs.a_dict() for obs in self.observaciones]},
-        }
+        if self.tipo == "observaciones":
+            payload = {"observaciones": [obs.a_dict() for obs in self.observaciones]}
+        else:
+            payload = dict(self.contenido)
+        return {"header": asdict(self.encabezado), "payload": payload}
 
     def a_bytes(self) -> bytes:
         return json.dumps(self.a_dict(), ensure_ascii=False).encode("utf-8")
@@ -169,6 +238,8 @@ class Mensaje:
             raise ErrorContrato("El mensaje debe ser un objeto JSON")
         encabezado = _construir(Encabezado, datos.get("header"), "header")
         payload = datos.get("payload")
+        if encabezado.tipo_mensaje != "observaciones":
+            return cls(encabezado, (), payload if isinstance(payload, dict) else {"_invalido": payload})
         if not isinstance(payload, dict) or not isinstance(payload.get("observaciones"), list):
             raise ErrorContrato("'payload.observaciones' debe ser una lista")
         observaciones = tuple(Observacion.desde_dict(obs) for obs in payload["observaciones"])

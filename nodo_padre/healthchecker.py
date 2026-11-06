@@ -78,11 +78,14 @@ def lanzar_padre(nueva_consola: bool) -> subprocess.Popen:
 
 
 def describir_latido(latido: dict[str, Any]) -> str:
-    nodos = ", ".join(latido.get("nodos_vistos", {})) or "ninguno"
+    estados = latido.get("estados_nodos", {})
+    nodos = ", ".join(f"{nodo} ({estados[nodo]})" if nodo in estados else nodo
+                      for nodo in latido.get("nodos_vistos", {})) or "ninguno"
+    caidos = [nodo for nodo, estado in estados.items() if estado == "caido"]
     return (f"Padre OK | pid {latido.get('pid')} | activo {latido.get('segundos_activo')} s | "
             f"mensajes {latido.get('mensajes_recibidos')} | obs. nuevas {latido.get('observaciones_nuevas')} | "
             f"alertas {latido.get('alertas_emitidas')} (pendientes {latido.get('alertas_pendientes')}) | "
-            f"nodos: {nodos}")
+            f"nodos: {nodos}" + (f" | CAÍDOS: {', '.join(caidos)}" if caidos else ""))
 
 
 def main() -> int:
@@ -123,6 +126,8 @@ def main() -> int:
                     espera_reintento = gracia
                     if config["imprimir_latidos"]:
                         log.info(describir_latido(datos))
+                elif datos.get("tipo") == "estado_nodo" and datos.get("estado") == "caido":
+                    log.error("NODO CAÍDO: %s se cerró (%s)", datos.get("nodo_id"), datos.get("motivo"))
                 else:
                     log.info("EVENTO del padre: %s", json.dumps(datos, ensure_ascii=False))
 
