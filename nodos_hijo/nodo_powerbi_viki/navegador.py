@@ -90,7 +90,8 @@ class NavegadorPowerBI:
                  visible: bool = True, espera_carga_segundos: float = 90, espera_inicio_sesion_segundos: float = 300,
                  segundos_estable: float = 4, minimo_visuales: int = 20, ancho: int = 1920, alto: int = 1080,
                  modo_sesion: str = "perfil_propio", puerto_depuracion: int = 9222,
-                 ruta_driver: Path | None = None, texto_reporte_listo: str | None = "Actualizado") -> None:
+                 ruta_driver: Path | None = None, texto_reporte_listo: str | None = "Actualizado",
+                 argumentos_extra: list[str] | None = None) -> None:
         if navegador not in ("edge", "chrome"):
             raise ValueError(f"Navegador no soportado: {navegador!r} (usa 'edge' o 'chrome')")
         if modo_sesion not in MODOS_SESION:
@@ -108,6 +109,7 @@ class NavegadorPowerBI:
         self.puerto_depuracion = puerto_depuracion
         self.ruta_driver = ruta_driver
         self.texto_listo = texto_reporte_listo
+        self.argumentos_extra = list(argumentos_extra or [])
         self.lecturas = 0
         self.host_reporte = urlparse(url).hostname or ""   # app.powerbi.com ("" para páginas locales)
         self._driver: webdriver.Remote | None = None
@@ -118,7 +120,7 @@ class NavegadorPowerBI:
         try:
             self.lecturas += 1
             if self._driver is None:
-                self._driver = self._crear_driver()
+                self._driver = self._crear_driver_con_reintento()
                 log.info("Lectura #%d: abriendo el reporte de Power BI: %s", self.lecturas, self.url)
                 self._driver.get(self.url)
             elif self._en_inicio_de_sesion() or not self._driver.current_url.startswith(("http", "file")):
@@ -162,6 +164,48 @@ class NavegadorPowerBI:
 
     # ------------------------------------------------------------ pasos internos
 
+    def _crear_driver_con_reintento(self) -> webdriver.Remote:
+        """Crea el driver. Si Edge "crashea" al arrancar, cierra los Edge huérfanos del perfil y reintenta una vez."""
+        if self.modo_sesion == "perfil_propio":
+            self._cerrar_edge_huerfanos()
+        try:
+            return self._crear_driver()
+        except WebDriverException as error:
+            texto = (error.msg or str(error)).lower()
+            if self.modo_sesion != "perfil_propio" or not ("crashed" in texto or "already in use" in texto
+                                                             or "devtoolsactiveport" in texto):
+                raise
+            log.warning("Edge no arrancó (%s). Se cierran los Edge que usan el perfil del bot y se reintenta...",
+                        (error.msg or str(error)).strip().splitlines()[0])
+            self._cerrar_edge_huerfanos()
+            time.sleep(2)
+            return self._crear_driver()
+
+    def _cerrar_edge_huerfanos(self) -> None:
+        """Cierra SOLO los msedge.exe que usan la carpeta de perfil del bot (nunca tu Edge normal).
+
+        Si quedó un Edge abierto con ese perfil (una corrida anterior que se cayó, o la ventana que dejaste
+        abierta), el perfil queda bloqueado y cada Edge nuevo "crashea" al arrancar.
+        """
+        try:
+            import psutil
+        except ImportError:
+            return
+        perfil = str(self.carpeta_perfil).lower().rstrip("\\/")
+        nombres = ("msedge.exe", "msedge") if self.navegador == "edge" else ("chrome.exe", "chrome")
+        cerrados = []
+        for proceso in psutil.process_iter(["name", "cmdline"]):
+            try:
+                if (proceso.info["name"] or "").lower() in nombres and \
+                        perfil in " ".join(proceso.info["cmdline"] or []).lower():
+                    proceso.kill()
+                    cerrados.append(proceso.pid)
+            except psutil.Error:
+                continue
+        if cerrados:
+            log.warning("Se cerraron %d procesos de Edge que tenían bloqueado el perfil del bot", len(cerrados))
+            time.sleep(1)
+
     def _crear_driver(self) -> webdriver.Remote:
         opciones = webdriver.EdgeOptions() if self.navegador == "edge" else webdriver.ChromeOptions()
         if self.modo_sesion == "conectar":
@@ -176,11 +220,19 @@ class NavegadorPowerBI:
             opciones.add_argument("--no-default-browser-check")
             if not self.visible:
                 opciones.add_argument("--headless=new")
+        for argumento in self.argumentos_extra:
+            opciones.add_argument(argumento)
             log.info("Iniciando %s (%s) con el perfil %s", self.navegador,
                      "visible" if self.visible else "oculto", self.carpeta_perfil)
         clase = webdriver.Edge if self.navegador == "edge" else webdriver.Chrome
         servicio_clase = (webdriver.EdgeService if self.navegador == "edge" else webdriver.ChromeService)
-        servicio = servicio_clase(executable_path=str(self.ruta_driver)) if self.ruta_driver else servicio_clase()
+        # Registro detallado del driver: si Edge no arranca, ahí queda la causa exacta.
+        from comun.utilidades import DIR_LOGS
+        DIR_LOGS.mkdir(exist_ok=True)
+        extra = {"log_output": str(DIR_LOGS / f"{self.navegador}driver.log"), "service_args": ["--verbose"]}
+        if self.ruta_driver:
+            extra["executable_path"] = str(self.ruta_driver)
+        servicio = servicio_clase(**extra)
         driver = clase(options=opciones, service=servicio)
         if self.modo_sesion == "conectar":
             driver.switch_to.new_window("tab")  # no se toca lo que tengas abierto en ese Edge
@@ -195,6 +247,11 @@ class NavegadorPowerBI:
             return (f"{texto}. ¿Está abierto el Edge de abrir_edge_sesion.bat (puerto {self.puerto_depuracion})?")
         if "user data directory is already in use" in bajo:
             return f"{texto}. Cierra la otra ventana de Edge que usa el perfil {self.carpeta_perfil}"
+        if "failed to start" in bajo or "crashed" in bajo or "devtoolsactiveport" in bajo:
+            return (f"{texto}. Edge abrió pero Selenium no pudo controlarlo. Causas típicas: (1) quedó un Edge abierto "
+                    f"con el perfil {self.carpeta_perfil} -> ciérralo o borra esa carpeta (tocará iniciar sesión de "
+                    "nuevo); (2) una política de la empresa bloquea la automatización: revisa edge://policy "
+                    "(RemoteDebuggingAllowed / DeveloperToolsAvailability). Detalle en logs/edgedriver.log")
         if "unable to obtain driver" in bajo or ("msedgedriver" in bajo and "not found" in bajo):
             return (f"{texto}. Selenium no pudo descargar msedgedriver (¿red de la empresa?): descárgalo de "
                     "https://developer.microsoft.com/microsoft-edge/tools/webdriver con la MISMA versión de tu "

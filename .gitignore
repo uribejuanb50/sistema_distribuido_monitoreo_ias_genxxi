@@ -18,3 +18,6 @@ datos/capturas/
 
 # Paquetes de código generados para copiar a otro equipo
 entrega/
+
+# Copias de los mensajes enviados al padre (contienen datos del reporte)
+datos/mensajes_enviados/

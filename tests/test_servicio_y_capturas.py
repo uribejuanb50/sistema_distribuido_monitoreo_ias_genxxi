@@ -200,6 +200,7 @@ def correr_hijo(monkeypatch, tmp_path, errores, cerrar_ante_error=True, fallos=1
     hijo = cargar_modulo("main_hijo_servicio", DIR_POWERBI / "main.py")
     config = cargar_json(DIR_POWERBI / "config.json") | {"cerrar_ante_error": cerrar_ante_error,
                                                           "fallos_para_caido": fallos,
+                                                          "carpeta_mensajes_enviados": str(tmp_path / "copias"),
                                                           "intervalo_segundos": 0, "espera_conexion_segundos": 0}
     ruta_config = tmp_path / "config.json"
     ruta_config.write_text(json.dumps(config), encoding="utf-8")
@@ -344,3 +345,12 @@ def test_cada_lectura_recarga_la_pagina(monkeypatch):
     nav.capturar()
     assert driver.acciones == ["refresh", "refresh"]
     nav._driver = None
+
+
+def test_hijo_deja_copia_del_mensaje_que_recibe_el_padre(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr(sys, "argv", ["main.py"])  # correr_hijo lo reemplaza; --ver-mensajes se agrega abajo
+    original = sys.argv
+    codigo, enviados, _ = correr_hijo(monkeypatch, tmp_path, [None, KeyboardInterrupt()])
+    copia = json.loads((tmp_path / "copias" / "nodo_powerbi_viki_estado.json").read_text(encoding="utf-8"))
+    assert copia == enviados[-1].a_dict()  # exactamente el diccionario que recibe el padre
+    assert copia["payload"]["estado"] == "detenido"

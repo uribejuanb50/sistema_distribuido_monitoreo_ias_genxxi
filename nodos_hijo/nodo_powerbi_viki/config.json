@@ -29,6 +29,8 @@
 
   "_ruta_driver": "null = Selenium descarga msedgedriver solo. Si la red de la empresa lo bloquea, pon la ruta del msedgedriver.exe (misma versión que tu Edge).",
   "ruta_driver": null,
+  "_argumentos_navegador": "Opciones extra para Edge. Si Edge sigue \"crasheando\" en el equipo de la empresa, prueba [\"--disable-features=RendererCodeIntegrity\"].",
+  "argumentos_navegador": [],
   "carpeta_perfil_navegador": null,
   "_carpeta_perfil_navegador": "null = %LOCALAPPDATA%/sistema_recoleccion_xxi/perfil_navegador_powerbi (fuera de OneDrive: guarda la sesión iniciada).",
 
@@ -36,6 +38,8 @@
   "_captura_sin_conexion": "Si se indica una ruta, NO abre el navegador: lee esa captura (JSON del nodo o .txt de la consola). Útil para probar.",
   "captura_sin_conexion": null,
 
+  "_imprimir_mensajes": "true = cada mensaje que se envía al padre se imprime COMPLETO en la consola (el JSON exacto). Siempre queda una copia del último de cada tipo en datos/mensajes_enviados/.",
+  "imprimir_mensajes": true,
   "reenvio_forzado_segundos": 3600,
   "espera_conexion_segundos": 1.0
 }

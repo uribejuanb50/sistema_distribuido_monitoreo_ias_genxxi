@@ -1,0 +1,792 @@
+{
+  "header": {
+    "nodo_id": "nodo_powerbi_viki",
+    "tipo_fuente": "powerbi",
+    "fuente": "reporte Power BI VIKI",
+    "tipo_mensaje": "captura",
+    "version_esquema": "1.0",
+    "id_mensaje": "e43af593cb064d498e4cceaadf43cdbd",
+    "enviado_en": "2026-11-06T11:02:53-05:00",
+    "secuencia": 1
+  },
+  "payload": {
+    "capturado_en": "2026-11-06T09:30:00-05:00",
+    "origen": "html",
+    "visuales": [
+      {
+        "bloque": 4,
+        "seccion": "Visual / Bloque 4",
+        "valores": [
+          "Actualizado: miércoles, 4 de noviembre de 2026"
+        ],
+        "numeros": [
+          null
+        ]
+      },
+      {
+        "bloque": 24,
+        "seccion": "Visual / Bloque 24",
+        "valores": [
+          "3.678"
+        ],
+        "numeros": [
+          3678.0
+        ]
+      },
+      {
+        "bloque": 52,
+        "seccion": "Visual / Bloque 52",
+        "valores": [
+          "7,1 %"
+        ],
+        "numeros": [
+          7.1
+        ]
+      },
+      {
+        "bloque": 53,
+        "seccion": "Visual / Bloque 53",
+        "valores": [
+          "1.475"
+        ],
+        "numeros": [
+          1475.0
+        ]
+      },
+      {
+        "bloque": 54,
+        "seccion": "Visual / Bloque 54",
+        "valores": [
+          "273.768"
+        ],
+        "numeros": [
+          273768.0
+        ]
+      },
+      {
+        "bloque": 55,
+        "seccion": "Visual / Bloque 55",
+        "valores": [
+          "19.531"
+        ],
+        "numeros": [
+          19531.0
+        ]
+      },
+      {
+        "bloque": 56,
+        "seccion": "Visual / Bloque 56",
+        "valores": [
+          "50.522"
+        ],
+        "numeros": [
+          50522.0
+        ]
+      },
+      {
+        "bloque": 57,
+        "seccion": "Visual / Bloque 57",
+        "valores": [
+          "43,5"
+        ],
+        "numeros": [
+          43.5
+        ]
+      },
+      {
+        "bloque": 58,
+        "seccion": "Visual / Bloque 58",
+        "valores": [
+          "2,6"
+        ],
+        "numeros": [
+          2.6
+        ]
+      },
+      {
+        "bloque": 59,
+        "seccion": "Visual / Bloque 59",
+        "valores": [
+          "1.706"
+        ],
+        "numeros": [
+          1706.0
+        ]
+      },
+      {
+        "bloque": 60,
+        "seccion": "Visual / Bloque 60",
+        "valores": [
+          "28.329"
+        ],
+        "numeros": [
+          28329.0
+        ]
+      },
+      {
+        "bloque": 61,
+        "seccion": "Visual / Bloque 61",
+        "valores": [
+          "38.689"
+        ],
+        "numeros": [
+          38689.0
+        ]
+      },
+      {
+        "bloque": 62,
+        "seccion": "Visual / Bloque 62",
+        "valores": [
+          "1,4"
+        ],
+        "numeros": [
+          1.4
+        ]
+      },
+      {
+        "bloque": 63,
+        "seccion": "Visual / Bloque 63",
+        "valores": [
+          "39,0"
+        ],
+        "numeros": [
+          39.0
+        ]
+      },
+      {
+        "bloque": 77,
+        "seccion": "Visual / Bloque 77",
+        "valores": [
+          "2,3 %"
+        ],
+        "numeros": [
+          2.3
+        ]
+      },
+      {
+        "bloque": 78,
+        "seccion": "Visual / Bloque 78",
+        "valores": [
+          "57,9"
+        ],
+        "numeros": [
+          57.9
+        ]
+      },
+      {
+        "bloque": 79,
+        "seccion": "Visual / Bloque 79",
+        "valores": [
+          "2,8"
+        ],
+        "numeros": [
+          2.8
+        ]
+      },
+      {
+        "bloque": 80,
+        "seccion": "Visual / Bloque 80",
+        "valores": [
+          "948"
+        ],
+        "numeros": [
+          948.0
+        ]
+      },
+      {
+        "bloque": 81,
+        "seccion": "Visual / Bloque 81",
+        "valores": [
+          "3.596"
+        ],
+        "numeros": [
+          3596.0
+        ]
+      },
+      {
+        "bloque": 82,
+        "seccion": "Visual / Bloque 82",
+        "valores": [
+          "7.985"
+        ],
+        "numeros": [
+          7985.0
+        ]
+      },
+      {
+        "bloque": 83,
+        "seccion": "Visual / Bloque 83",
+        "valores": [
+          "2,2"
+        ],
+        "numeros": [
+          2.2
+        ]
+      },
+      {
+        "bloque": 84,
+        "seccion": "Visual / Bloque 84",
+        "valores": [
+          "848"
+        ],
+        "numeros": [
+          848.0
+        ]
+      },
+      {
+        "bloque": 85,
+        "seccion": "Visual / Bloque 85",
+        "valores": [
+          "160.406"
+        ],
+        "numeros": [
+          160406.0
+        ]
+      },
+      {
+        "bloque": 86,
+        "seccion": "Visual / Bloque 86",
+        "valores": [
+          "3.716"
+        ],
+        "numeros": [
+          3716.0
+        ]
+      },
+      {
+        "bloque": 87,
+        "seccion": "Visual / Bloque 87",
+        "valores": [
+          "10.427"
+        ],
+        "numeros": [
+          10427.0
+        ]
+      },
+      {
+        "bloque": 88,
+        "seccion": "Visual / Bloque 88",
+        "valores": [
+          "71,7"
+        ],
+        "numeros": [
+          71.7
+        ]
+      },
+      {
+        "bloque": 101,
+        "seccion": "Visual / Bloque 101",
+        "valores": [
+          "14,0 %"
+        ],
+        "numeros": [
+          14.0
+        ]
+      },
+      {
+        "bloque": 103,
+        "seccion": "Visual / Bloque 103",
+        "valores": [
+          "758"
+        ],
+        "numeros": [
+          758.0
+        ]
+      },
+      {
+        "bloque": 104,
+        "seccion": "Visual / Bloque 104",
+        "valores": [
+          "24.733"
+        ],
+        "numeros": [
+          24733.0
+        ]
+      },
+      {
+        "bloque": 105,
+        "seccion": "Visual / Bloque 105",
+        "valores": [
+          "30.704"
+        ],
+        "numeros": [
+          30704.0
+        ]
+      },
+      {
+        "bloque": 106,
+        "seccion": "Visual / Bloque 106",
+        "valores": [
+          "1,2"
+        ],
+        "numeros": [
+          1.2
+        ]
+      },
+      {
+        "bloque": 107,
+        "seccion": "Visual / Bloque 107",
+        "valores": [
+          "17,2"
+        ],
+        "numeros": [
+          17.2
+        ]
+      },
+      {
+        "bloque": 108,
+        "seccion": "Visual / Bloque 108",
+        "valores": [
+          "627"
+        ],
+        "numeros": [
+          627.0
+        ]
+      },
+      {
+        "bloque": 109,
+        "seccion": "Visual / Bloque 109",
+        "valores": [
+          "113.362"
+        ],
+        "numeros": [
+          113362.0
+        ]
+      },
+      {
+        "bloque": 110,
+        "seccion": "Visual / Bloque 110",
+        "valores": [
+          "15.815"
+        ],
+        "numeros": [
+          15815.0
+        ]
+      },
+      {
+        "bloque": 111,
+        "seccion": "Visual / Bloque 111",
+        "valores": [
+          "40.095"
+        ],
+        "numeros": [
+          40095.0
+        ]
+      },
+      {
+        "bloque": 112,
+        "seccion": "Visual / Bloque 112",
+        "valores": [
+          "2,5"
+        ],
+        "numeros": [
+          2.5
+        ]
+      },
+      {
+        "bloque": 113,
+        "seccion": "Visual / Bloque 113",
+        "valores": [
+          "17,6"
+        ],
+        "numeros": [
+          17.6
+        ]
+      },
+      {
+        "bloque": 114,
+        "seccion": "Visual / Bloque 114",
+        "valores": [
+          "Gerencia",
+          "Usuarios",
+          "Sesiones",
+          "Acciones",
+          "Acc_x_Sesion",
+          "SOPORTE INTEGRAL CANALES ATENCION UMM",
+          "SERVICIO INTEGRAL CANALES ATENCION UMM",
+          "RELACIONES PRIORITARIAS CANALES ATENCION UMM",
+          "R5-Oriente",
+          "R4-Centro",
+          "R3-Occidente",
+          "R2-Noroccidente",
+          "R1-Costa",
+          "COMERCIAL CANALES ATENCION UMM",
+          "Total"
+        ],
+        "numeros": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "bloque": 116,
+        "seccion": "Visual / Bloque 116",
+        "valores": [
+          "GERENCIA",
+          "%Usabilidad",
+          "Sesiones",
+          "Acciones",
+          "Acc_x_Sesion",
+          "TMO/TPA",
+          "%NPS",
+          "%FCR",
+          "COMERCIAL CANALES ATENCION UMM",
+          "R1-Costa",
+          "R2-Noroccidente",
+          "R3-Occidente",
+          "R4-Centro",
+          "R5-Oriente",
+          "RELACIONES PRIORITARIAS CANALES ATENCION UMM",
+          "SERVICIO INTEGRAL CANALES ATENCION UMM",
+          "SOPORTE INTEGRAL CANALES ATENCION UMM",
+          "T-R1",
+          "T-R2",
+          "T-R3",
+          "T-R4",
+          "Total"
+        ],
+        "numeros": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "bloque": 118,
+        "seccion": "0 mil",
+        "valores": [
+          "0 mil0 mil",
+          "10 mil10 mil",
+          "20 mil20 mil",
+          "30 mil30 mil",
+          "0 %0 %",
+          "5 %5 %",
+          "10 %10 %",
+          "FECHAFECHA",
+          "01/11/202601/11/2026",
+          "02/11/202602/11/2026",
+          "03/11/202603/11/2026",
+          "04/11/202604/11/2026",
+          "2,1 %",
+          "8,2 %",
+          "1,5 %",
+          "7,8 %"
+        ],
+        "numeros": [
+          null,
+          null,
+          null,
+          null,
+          0.0,
+          55.0,
+          1010.0,
+          null,
+          null,
+          null,
+          null,
+          null,
+          2.1,
+          8.2,
+          1.5,
+          7.8
+        ]
+      },
+      {
+        "bloque": 119,
+        "seccion": "Visual / Bloque 119",
+        "valores": [
+          "Semana Mes",
+          "Acciones",
+          "Sesiones",
+          "%Usabilidad",
+          "TMO/TPA",
+          "%FCR",
+          "%NPS",
+          "Var_Sesiones %",
+          "Semana 1",
+          "50.522",
+          "19.531",
+          "7,1 %",
+          "10:01",
+          "86,5 %",
+          "64,1 %",
+          "0,0 %",
+          "Total",
+          "50.522",
+          "19.531",
+          "7,1 %",
+          "10:01",
+          "86,5 %",
+          "64,1 %",
+          "0,0 %"
+        ],
+        "numeros": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          50522.0,
+          19531.0,
+          7.1,
+          601.0,
+          86.5,
+          64.1,
+          0.0,
+          null,
+          50522.0,
+          19531.0,
+          7.1,
+          601.0,
+          86.5,
+          64.1,
+          0.0
+        ]
+      },
+      {
+        "bloque": 120,
+        "seccion": "Visual / Bloque 120",
+        "valores": [
+          "Ubicación",
+          "Usuarios",
+          "Sesiones",
+          "Acciones",
+          "Acc_x_Sesion",
+          "ABAI",
+          "COS",
+          "BRM",
+          "ATENTO",
+          "AQI",
+          "Bogota Norte",
+          "Bogota Oriente",
+          "Bogota Sur",
+          "Bogota Occidente",
+          "Eje Cafetero",
+          "Costa Norte",
+          "ALMACONTACT",
+          "Medellin",
+          "Costa Sur",
+          "Sanboy",
+          "Vacana",
+          "Tolhuca",
+          "Cunmenal",
+          "Antcho",
+          "Cali"
+        ],
+        "numeros": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "bloque": 122,
+        "seccion": "Visual / Bloque 122",
+        "valores": [
+          "Ubicación",
+          "%Usabilidad",
+          "Sesiones",
+          "Acciones",
+          "Acc_x_Sesion",
+          "TMO/TPA",
+          "%NPS",
+          "%FCR",
+          "ABAI",
+          "COS",
+          "BRM",
+          "ATENTO",
+          "Bogota Norte",
+          "AQI",
+          "Bogota Sur",
+          "Bogota Oriente",
+          "Costa Norte",
+          "Bogota Occidente",
+          "Eje Cafetero",
+          "ALMACONTACT",
+          "Costa Sur",
+          "Medellin",
+          "Vacana",
+          "Sanboy",
+          "Tolhuca",
+          "Cunmenal",
+          "Antcho",
+          "Cali"
+        ],
+        "numeros": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "bloque": 126,
+        "seccion": "0 mil",
+        "valores": [
+          "0 mil0 mil",
+          "50 mil50 mil",
+          "11",
+          "22",
+          "33",
+          "Grupo_AntiguedadGrupo_Antiguedad",
+          "1) 0 - 3 meses1) 0 - 3 meses",
+          "2) 3 - 6 meses2) 3 - 6 meses",
+          "3) Más de 6 meses3) Más de 6 meses",
+          "154",
+          "5.582",
+          "32.953",
+          "22",
+          "6.260",
+          "44.240",
+          "2,5",
+          "1,4",
+          "1,2"
+        ],
+        "numeros": [
+          null,
+          null,
+          11.0,
+          22.0,
+          33.0,
+          null,
+          null,
+          null,
+          null,
+          154.0,
+          5582.0,
+          32953.0,
+          22.0,
+          6260.0,
+          44240.0,
+          2.5,
+          1.4,
+          1.2
+        ]
+      },
+      {
+        "bloque": 127,
+        "seccion": "Visual / Bloque 127",
+        "valores": [
+          "2,5 %",
+          "7,5 %",
+          "7,1 %"
+        ],
+        "numeros": [
+          2.5,
+          7.5,
+          7.1
+        ]
+      },
+      {
+        "bloque": 128,
+        "seccion": "Visual / Bloque 128",
+        "valores": [
+          "Canal",
+          "Usuario",
+          "Nombre",
+          "Sesiones",
+          "Sesiones Con Contacto",
+          "Acciones",
+          "Acc_x_Sesion",
+          "%NPS",
+          "%FCR",
+          "TMO"
+        ],
+        "numeros": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      }
+    ]
+  }
+}

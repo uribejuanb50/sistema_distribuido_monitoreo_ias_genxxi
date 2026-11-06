@@ -1,0 +1,19 @@
+{
+  "header": {
+    "nodo_id": "nodo_powerbi_viki",
+    "tipo_fuente": "powerbi",
+    "fuente": "reporte Power BI VIKI",
+    "tipo_mensaje": "estado",
+    "version_esquema": "1.0",
+    "id_mensaje": "92d33f11c67847359a0e715afdafc7ea",
+    "enviado_en": "2026-11-06T11:02:53-05:00",
+    "secuencia": 3
+  },
+  "payload": {
+    "estado": "activo",
+    "motivo": "lectura correcta",
+    "detalle": {
+      "fuente": "reporte Power BI VIKI"
+    }
+  }
+}

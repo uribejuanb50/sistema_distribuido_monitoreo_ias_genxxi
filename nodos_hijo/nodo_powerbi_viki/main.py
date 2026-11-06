@@ -17,6 +17,10 @@ Uso (desde esta carpeta):
     python main.py                 # ciclo continuo
     python main.py --una-vez       # lee y publica una sola vez
     python main.py --solo-mostrar  # solo lee e imprime (para depurar la extracción)
+    python main.py --ver-mensajes  # además imprime en la consola el JSON completo de cada mensaje al padre
+
+Cada mensaje que se envía al padre también queda guardado, tal cual, en
+datos/mensajes_enviados/<nodo_id>_<tipo>.json (el último de cada tipo) para poder revisarlo.
 """
 from __future__ import annotations
 
@@ -40,7 +44,7 @@ import zmq  # noqa: E402
 from comun.contrato import Encabezado, Mensaje, Observacion, huella_lote  # noqa: E402
 from comun.extractor_base import ErrorExtraccion, ErrorServicio, ExtractorBase  # noqa: E402
 from comun.red import cargar_config_red, crear_publicador, publicar  # noqa: E402
-from comun.utilidades import cargar_json, configurar_logging  # noqa: E402
+from comun.utilidades import cargar_json, configurar_logging, resolver_ruta  # noqa: E402
 from extraccion import crear_extractor  # noqa: E402
 
 log = logging.getLogger("nodo_hijo")
@@ -51,6 +55,8 @@ def parsear_argumentos() -> argparse.Namespace:
     parser.add_argument("--config", default=str(DIR_NODO / "config.json"), help="Ruta del config.json")
     parser.add_argument("--una-vez", action="store_true", help="Lee y publica una sola vez y termina")
     parser.add_argument("--solo-mostrar", action="store_true", help="Solo extrae e imprime, sin publicar")
+    parser.add_argument("--ver-mensajes", action="store_true",
+                        help="Imprime en la consola el JSON completo de cada mensaje que se envía al padre")
     return parser.parse_args()
 
 
@@ -94,7 +100,10 @@ def huella_captura(captura: dict[str, Any]) -> str:
 class Emisor:
     """Arma los mensajes del contrato y los publica al padre con un número de secuencia."""
 
-    def __init__(self, publicador: Any, topico: str, nodo_id: str, extractor: ExtractorBase) -> None:
+    def __init__(self, publicador: Any, topico: str, nodo_id: str, extractor: ExtractorBase,
+                 carpeta_copias: Path | None = None, imprimir: bool = False) -> None:
+        self.carpeta_copias = carpeta_copias  # copia del último mensaje de cada tipo (para revisarlo)
+        self.imprimir = imprimir
         self.publicador = publicador
         self.topico = topico
         self.nodo_id = nodo_id
@@ -110,7 +119,25 @@ class Emisor:
                                 fuente=self.extractor.fuente, tipo_mensaje=tipo, secuencia=self.secuencia)
         mensaje = Mensaje(encabezado, observaciones, contenido or {})
         publicar(self.publicador, self.topico, mensaje.a_bytes())
+        self._dejar_copia(mensaje)
         return mensaje
+
+    def _dejar_copia(self, mensaje: Mensaje) -> None:
+        """Guarda (y opcionalmente imprime) exactamente el diccionario que recibe el padre."""
+        if self.carpeta_copias is None and not self.imprimir:
+            return
+        texto = json.dumps(mensaje.a_dict(), ensure_ascii=False, indent=2)
+        if self.imprimir:
+            print(f"\n----- MENSAJE #{mensaje.encabezado.secuencia} AL PADRE ({mensaje.tipo}) -----\n{texto}\n"
+                  f"----- FIN MENSAJE #{mensaje.encabezado.secuencia} -----\n", flush=True)
+        if self.carpeta_copias is not None:
+            try:
+                self.carpeta_copias.mkdir(parents=True, exist_ok=True)
+                ruta = self.carpeta_copias / f"{self.nodo_id}_{mensaje.tipo}.json"
+                ruta.write_text(texto, encoding="utf-8")
+                log.info("Copia del mensaje #%d (%s) en %s", mensaje.encabezado.secuencia, mensaje.tipo, ruta)
+            except OSError as error:  # la copia es solo para revisar: nunca debe frenar el envío
+                log.warning("No se pudo guardar la copia del mensaje: %s", error)
 
     def avisar_estado(self, estado: str, motivo: str, **detalle: Any) -> bool:
         """Envía el estado solo si cambió (para no llenar al padre de avisos repetidos)."""
@@ -149,7 +176,10 @@ def main() -> int:
     # ZeroMQ tarda un instante en conectar; sin esta espera se pierde el primer envío.
     time.sleep(config.get("espera_conexion_segundos", 1.0))
     log.info("Nodo %s publicando en %s (fuente: %s)", nodo_id, red.conexion_datos, extractor.fuente)
-    emisor = Emisor(publicador, red.topico_datos, nodo_id, extractor)
+    copias = config.get("carpeta_mensajes_enviados", "datos/mensajes_enviados")
+    emisor = Emisor(publicador, red.topico_datos, nodo_id, extractor,
+                    carpeta_copias=resolver_ruta(copias) if copias else None,
+                    imprimir=args.ver_mensajes or bool(config.get("imprimir_mensajes", False)))
 
     ultima_huella: str | None = None
     ultima_huella_captura: str | None = None
