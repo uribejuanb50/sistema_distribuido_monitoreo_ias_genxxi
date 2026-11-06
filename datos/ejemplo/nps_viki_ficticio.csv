@@ -1,0 +1,13 @@
+kpi_id,canal,nombre_kpi,fecha_referencia,tipo_periodo,valor,unidad,meta
+viki.nps_general_call_center,VIKI,NPS General Call Center con Uso VIKI,2025-11-01,mensual,42.0,puntos,45
+viki.nps_general_call_center,VIKI,NPS General Call Center con Uso VIKI,2025-12-01,mensual,43.5,puntos,45
+viki.nps_general_call_center,VIKI,NPS General Call Center con Uso VIKI,2026-01-01,mensual,41.8,puntos,45
+viki.nps_general_call_center,VIKI,NPS General Call Center con Uso VIKI,2026-02-01,mensual,44.2,puntos,45
+viki.nps_general_call_center,VIKI,NPS General Call Center con Uso VIKI,2026-03-01,mensual,45.0,puntos,45
+viki.nps_general_call_center,VIKI,NPS General Call Center con Uso VIKI,2026-04-01,mensual,44.6,puntos,45
+viki.nps_general_call_center,VIKI,NPS General Call Center con Uso VIKI,2026-05-01,mensual,46.1,puntos,45
+viki.nps_general_call_center,VIKI,NPS General Call Center con Uso VIKI,2026-06-01,mensual,46.4,puntos,45
+viki.nps_general_call_center,VIKI,NPS General Call Center con Uso VIKI,2026-07-01,mensual,45.3,puntos,45
+viki.nps_general_call_center,VIKI,NPS General Call Center con Uso VIKI,2026-08-01,mensual,44.0,puntos,45
+viki.nps_general_call_center,VIKI,NPS General Call Center con Uso VIKI,2026-09-01,mensual,42.7,puntos,45
+viki.nps_general_call_center,VIKI,NPS General Call Center con Uso VIKI,2026-10-01,mensual,41.2,puntos,45

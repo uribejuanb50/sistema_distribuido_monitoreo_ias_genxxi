@@ -1,0 +1,156 @@
+{
+  "_comentario": "Qué significa cada número del reporte Power BI de VIKI. Deducido de la captura del 28-oct-2026 y verificado con las identidades de 'validaciones'. Si el reporte cambia de diseño, las validaciones fallan y el nodo NO envía datos: revisa con calibrar.py.",
+  "canal": "VIKI",
+  "prefijo_kpi": "viki",
+
+  "segmentos": {
+    "general": "General",
+    "total": "Total",
+    "presencial": "Presencial",
+    "telefonico": "Telefónico"
+  },
+
+  "metricas": {
+    "_comentario": "decimales = cómo los muestra el reporte (define la tolerancia de redondeo de las validaciones).",
+    "licencias_asignadas":       {"nombre": "Licencias asignadas", "unidad": "unidades", "decimales": 0},
+    "usuarios":                  {"nombre": "Usuarios VIKI", "unidad": "unidades", "decimales": 0},
+    "sesiones":                  {"nombre": "Sesiones VIKI", "unidad": "unidades", "decimales": 0},
+    "acciones":                  {"nombre": "Acciones VIKI", "unidad": "unidades", "decimales": 0},
+    "acciones_x_sesion":         {"nombre": "Acciones por sesión", "unidad": "unidades", "decimales": 1},
+    "antiguedad_meses":          {"nombre": "Antigüedad promedio (meses)", "unidad": "unidades", "decimales": 1},
+    "usabilidad":                {"nombre": "% Usabilidad (sesiones con llamada / llamadas)", "unidad": "porcentaje", "decimales": 1},
+    "usuarios_llamada":          {"nombre": "Usuarios con llamada/turno", "unidad": "unidades", "decimales": 0},
+    "llamadas_turnos":           {"nombre": "Llamadas/Turnos", "unidad": "unidades", "decimales": 0},
+    "sesiones_llamada":          {"nombre": "Sesiones con llamada/turno", "unidad": "unidades", "decimales": 0},
+    "acciones_llamada":          {"nombre": "Acciones con llamada/turno", "unidad": "unidades", "decimales": 0},
+    "acciones_x_sesion_llamada": {"nombre": "Acciones por sesión con llamada/turno", "unidad": "unidades", "decimales": 1},
+    "antiguedad_meses_llamada":  {"nombre": "Antigüedad promedio con llamada/turno (meses)", "unidad": "unidades", "decimales": 1},
+    "tmo":                       {"nombre": "TMO/TPA", "unidad": "segundos", "decimales": 0},
+    "fcr":                       {"nombre": "% FCR", "unidad": "porcentaje", "decimales": 1},
+    "nps":                       {"nombre": "% NPS", "unidad": "porcentaje", "decimales": 1}
+  },
+
+  "tarjetas": {
+    "_comentario": "bloque: [segmento, métrica]. El bloque es la posición del visual en la página (orden de 'visual-container', desde 1). Son acumulados del mes a la fecha de actualización.",
+    "24":  ["general", "licencias_asignadas"],
+
+    "59":  ["total", "usuarios"],
+    "60":  ["total", "sesiones"],
+    "61":  ["total", "acciones"],
+    "62":  ["total", "acciones_x_sesion"],
+    "63":  ["total", "antiguedad_meses"],
+    "52":  ["total", "usabilidad"],
+    "53":  ["total", "usuarios_llamada"],
+    "54":  ["total", "llamadas_turnos"],
+    "55":  ["total", "sesiones_llamada"],
+    "56":  ["total", "acciones_llamada"],
+    "58":  ["total", "acciones_x_sesion_llamada"],
+    "57":  ["total", "antiguedad_meses_llamada"],
+
+    "80":  ["presencial", "usuarios"],
+    "81":  ["presencial", "sesiones"],
+    "82":  ["presencial", "acciones"],
+    "83":  ["presencial", "acciones_x_sesion"],
+    "78":  ["presencial", "antiguedad_meses"],
+    "77":  ["presencial", "usabilidad"],
+    "84":  ["presencial", "usuarios_llamada"],
+    "85":  ["presencial", "llamadas_turnos"],
+    "86":  ["presencial", "sesiones_llamada"],
+    "87":  ["presencial", "acciones_llamada"],
+    "79":  ["presencial", "acciones_x_sesion_llamada"],
+    "88":  ["presencial", "antiguedad_meses_llamada"],
+
+    "103": ["telefonico", "usuarios"],
+    "104": ["telefonico", "sesiones"],
+    "105": ["telefonico", "acciones"],
+    "106": ["telefonico", "acciones_x_sesion"],
+    "107": ["telefonico", "antiguedad_meses"],
+    "101": ["telefonico", "usabilidad"],
+    "108": ["telefonico", "usuarios_llamada"],
+    "109": ["telefonico", "llamadas_turnos"],
+    "110": ["telefonico", "sesiones_llamada"],
+    "111": ["telefonico", "acciones_llamada"],
+    "112": ["telefonico", "acciones_x_sesion_llamada"],
+    "113": ["telefonico", "antiguedad_meses_llamada"]
+  },
+
+  "tablas": [
+    {
+      "nombre": "semanas",
+      "_comentario": "Semana N = días 7(N-1)+1 a 7N del mes (las 4 semanas suman exactamente el total). Una semana sin terminar solo envía razones (%, TMO), no conteos.",
+      "tipo": "semanal",
+      "encabezados_requeridos": ["Semana Mes"],
+      "columnas": {"Acciones": "acciones_llamada", "Sesiones": "sesiones_llamada", "%Usabilidad": "usabilidad",
+                   "TMO/TPA": "tmo", "%FCR": "fcr", "%NPS": "nps", "Var_Sesiones %": null},
+      "metricas_conteo": ["acciones_llamada", "sesiones_llamada"],
+      "total_a_mes": ["tmo", "fcr", "nps"]
+    },
+    {
+      "nombre": "gerencias_viki",
+      "tipo": "dimension",
+      "dimension": "gerencia",
+      "encabezados_requeridos": ["Gerencia", "Usuarios"],
+      "columnas": {"Usuarios": "usuarios", "Sesiones": "sesiones", "Acciones": "acciones", "Acc_x_Sesion": "acciones_x_sesion"}
+    },
+    {
+      "nombre": "gerencias_contactos",
+      "tipo": "dimension",
+      "dimension": "gerencia",
+      "encabezados_requeridos": ["Gerencia", "%Usabilidad"],
+      "columnas": {"%Usabilidad": "usabilidad", "Sesiones": "sesiones_llamada", "Acciones": "acciones_llamada",
+                   "Acc_x_Sesion": "acciones_x_sesion_llamada", "TMO/TPA": "tmo", "%NPS": "nps", "%FCR": "fcr"}
+    },
+    {
+      "nombre": "ubicaciones_viki",
+      "tipo": "dimension",
+      "dimension": "ubicacion",
+      "encabezados_requeridos": ["Ubicación", "Usuarios"],
+      "columnas": {"Usuarios": "usuarios", "Sesiones": "sesiones", "Acciones": "acciones", "Acc_x_Sesion": "acciones_x_sesion"}
+    },
+    {
+      "nombre": "ubicaciones_contactos",
+      "tipo": "dimension",
+      "dimension": "ubicacion",
+      "encabezados_requeridos": ["Ubicación", "%Usabilidad"],
+      "columnas": {"%Usabilidad": "usabilidad", "Sesiones": "sesiones_llamada", "Acciones": "acciones_llamada",
+                   "Acc_x_Sesion": "acciones_x_sesion_llamada", "TMO/TPA": "tmo", "%NPS": "nps", "%FCR": "fcr"}
+    }
+  ],
+
+  "graficos": [
+    {
+      "nombre": "acciones_por_antiguedad",
+      "_comentario": "Serie 1 suma exactamente el total de acciones (verificado). Las series 2 y 3 no se identificaron con certeza: no se envían.",
+      "dimension": "antiguedad",
+      "patron_categoria": "^\\d\\)\\s",
+      "series": ["acciones", null, null],
+      "validar_suma": {"acciones": "total.acciones"}
+    }
+  ],
+
+  "excluir_encabezados": {
+    "_comentario": "Visuales con estos encabezados NO se leen: tienen datos por persona (usuario, nombre).",
+    "encabezados": ["Usuario", "Nombre"]
+  },
+
+  "validaciones": {
+    "suma_segmentos": {
+      "total": "total",
+      "partes": ["presencial", "telefonico"],
+      "metricas": ["usuarios", "sesiones", "acciones", "usuarios_llamada", "llamadas_turnos",
+                   "sesiones_llamada", "acciones_llamada"]
+    },
+    "cocientes": {
+      "segmentos": ["total", "presencial", "telefonico"],
+      "reglas": [
+        {"resultado": "acciones_x_sesion", "numerador": "acciones", "denominador": "sesiones", "factor": 1},
+        {"resultado": "acciones_x_sesion_llamada", "numerador": "acciones_llamada", "denominador": "sesiones_llamada", "factor": 1},
+        {"resultado": "usabilidad", "numerador": "sesiones_llamada", "denominador": "llamadas_turnos", "factor": 100}
+      ]
+    }
+  },
+
+  "metas": {
+    "_comentario": "Opcional: meta vigente por kpi_id, p. ej. \"viki.semanal.nps\": 65. Sin meta, el cerebro no evalúa cumplimiento."
+  }
+}

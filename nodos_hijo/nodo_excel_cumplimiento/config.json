@@ -1,0 +1,18 @@
+{
+  "_comentario": "Nodo hijo que lee el Excel matricial de cumplimiento (Pospago, Tv + Voz). Rutas relativas a la raíz del proyecto.",
+  "nodo_id": "nodo_excel_cumplimiento",
+  "ruta_archivo": "datos/entrada/Libro1.xlsx",
+  "hoja": null,
+  "anio": 2026,
+  "mes_inicial": 1,
+  "columna_inicio": 3,
+  "intervalo_segundos": 10,
+  "reenvio_forzado_segundos": 300,
+  "espera_conexion_segundos": 1.0,
+  "etiquetas_filas": {
+    "Meta Driver": "meta_driver",
+    "Linea Base": "linea_base",
+    "Meta Jugada/Cumplimiento": "meta_jugada",
+    "Unidades Adicionales": "unidades_adicionales"
+  }
+}

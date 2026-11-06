@@ -1,0 +1,26 @@
+{
+  "_comentario": "Nodo hijo que lee el reporte Power BI de VIKI con Selenium. Rutas relativas a la raíz del proyecto.",
+  "nodo_id": "nodo_powerbi_viki",
+  "url_reporte": "https://app.powerbi.com/groups/me/reports/4964bcb3-33b1-42c4-a16f-99223f17c8be/461a7eb191670baa83a2?ctid=46bb22b8-4c2c-40ff-8360-7b6334821279&experience=power-bi",
+
+  "_intervalo_segundos": "TIEMPO DE LECTURA: cada cuántos segundos se vuelve a leer el reporte (1800 = cada 30 minutos).",
+  "intervalo_segundos": 1800,
+
+  "_espera_carga_segundos": "Máximo que se espera, en cada lectura, a que el reporte termine de dibujarse.",
+  "espera_carga_segundos": 90,
+  "espera_inicio_sesion_segundos": 300,
+  "segundos_estable": 4,
+  "minimo_visuales": 30,
+
+  "navegador": "edge",
+  "navegador_visible": true,
+  "carpeta_perfil_navegador": null,
+  "_carpeta_perfil_navegador": "null = %LOCALAPPDATA%/sistema_recoleccion_xxi/perfil_navegador_powerbi (fuera de OneDrive: guarda la sesión iniciada).",
+
+  "guardar_ultima_captura": "datos/capturas/powerbi_viki_ultima.json",
+  "_captura_sin_conexion": "Si se indica una ruta, NO abre el navegador: lee esa captura (JSON del nodo o .txt de la consola). Útil para probar.",
+  "captura_sin_conexion": null,
+
+  "reenvio_forzado_segundos": 3600,
+  "espera_conexion_segundos": 1.0
+}

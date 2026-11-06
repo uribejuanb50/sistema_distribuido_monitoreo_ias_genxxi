@@ -1,0 +1,35 @@
+{
+  "header": {
+    "version_esquema": "1.0",
+    "id_mensaje": "3f1d2c9a7b0e4c55a1f0d8e2b6c4a901",
+    "nodo_id": "nodo_excel_cumplimiento",
+    "tipo_fuente": "excel",
+    "fuente": "Libro1.xlsx",
+    "tipo_mensaje": "observaciones",
+    "enviado_en": "2026-10-22T16:00:00-05:00",
+    "secuencia": 1
+  },
+  "payload": {
+    "observaciones": [
+      {
+        "kpi_id": "pospago.cumplimiento_mensual",
+        "canal": "Pospago",
+        "nombre_kpi": "Cumplimiento mensual vs meta jugada",
+        "fecha_referencia": "2026-10-01",
+        "tipo_periodo": "mensual",
+        "valor": 151.486,
+        "unidad": "porcentaje",
+        "meta": 100.0,
+        "fecha_captura": "2026-10-22T15:59:58-05:00",
+        "atributos": {
+          "segmento": "Pospago",
+          "numero_mes": 10,
+          "meta_driver": 1849,
+          "linea_base": 924,
+          "meta_jugada": 1144,
+          "real": 1733
+        }
+      }
+    ]
+  }
+}
