@@ -195,10 +195,11 @@ class ExtractorQueSeCae(ExtractorBase):
         self.cerrado = True
 
 
-def correr_hijo(monkeypatch, tmp_path, errores, cerrar_ante_error=True):
+def correr_hijo(monkeypatch, tmp_path, errores, cerrar_ante_error=True, fallos=1):
     zmq = pytest.importorskip("zmq")
     hijo = cargar_modulo("main_hijo_servicio", DIR_POWERBI / "main.py")
     config = cargar_json(DIR_POWERBI / "config.json") | {"cerrar_ante_error": cerrar_ante_error,
+                                                          "fallos_para_caido": fallos,
                                                           "intervalo_segundos": 0, "espera_conexion_segundos": 0}
     ruta_config = tmp_path / "config.json"
     ruta_config.write_text(json.dumps(config), encoding="utf-8")
@@ -212,6 +213,15 @@ def correr_hijo(monkeypatch, tmp_path, errores, cerrar_ante_error=True):
                                                   close=lambda: None), term=lambda: None))
     monkeypatch.setattr(sys, "argv", ["main.py", "--config", str(ruta_config)])
     return hijo.main(), enviados, extractor
+
+
+def test_hijo_tolera_fallos_sueltos_antes_de_darse_por_caido(monkeypatch, tmp_path):
+    codigo, enviados, _ = correr_hijo(
+        monkeypatch, tmp_path, [ErrorServicio("lento"), None, ErrorServicio("a"), ErrorServicio("b"),
+                                ErrorServicio("c")], fallos=3)
+    assert codigo == 1
+    estados = [m.contenido["estado"] for m in enviados if m.tipo == "estado"]
+    assert estados == ["degradado", "activo", "degradado", "degradado", "caido"]
 
 
 def test_hijo_avisa_caido_y_se_cierra(monkeypatch, tmp_path):
@@ -274,7 +284,7 @@ class DriverFalso:
         self.acciones.append("refresh")
 
 
-LISTO = {"visuales": 129, "pantalla_carga": False, "visuales_cargando": 0, "texto_listo": True}
+LISTO = {"visuales": 129, "con_texto": 47, "pantalla_carga": False, "visuales_cargando": 0, "texto_listo": True}
 
 
 def navegador_falso(monkeypatch, estados, **kwargs):
@@ -289,19 +299,32 @@ def navegador_falso(monkeypatch, estados, **kwargs):
 
 
 def test_espera_pantalla_de_carga_y_spinners_antes_de_leer(monkeypatch):
-    estados = ([{"visuales": 0, "pantalla_carga": True, "visuales_cargando": 0, "texto_listo": False}] * 4
-               + [{"visuales": 129, "pantalla_carga": False, "visuales_cargando": 12, "texto_listo": True}] * 6
+    estados = ([{"visuales": 0, "con_texto": 0, "pantalla_carga": True, "visuales_cargando": 0,
+                 "texto_listo": False}] * 4
+               + [{**LISTO, "visuales_cargando": 12}] * 6
                + [LISTO])
     nav, reloj = navegador_falso(monkeypatch, estados)
     nav._esperar_reporte()
     assert reloj.t >= 0.5 * 10 + 2  # esperó la carga y luego 2 s de textos estables
 
 
-def test_tablero_que_nunca_termina_de_cargar_es_servicio_caido(monkeypatch):
-    nav, _ = navegador_falso(monkeypatch, [{"visuales": 129, "pantalla_carga": False, "visuales_cargando": 3,
-                                            "texto_listo": True}])
+def test_tablero_sin_visuales_es_servicio_caido(monkeypatch):
+    nav, _ = navegador_falso(monkeypatch, [{"visuales": 0, "con_texto": 0, "pantalla_carga": True,
+                                            "visuales_cargando": 0, "texto_listo": False}])
     with pytest.raises(ErrorServicio, match="no terminó de cargar"):
         nav._esperar_reporte()
+
+
+def test_spinner_pegado_con_datos_visibles_se_lee_igual(monkeypatch):
+    nav, reloj = navegador_falso(monkeypatch, [{**LISTO, "visuales_cargando": 1}])
+    nav._esperar_reporte()  # no lanza: hay datos en pantalla, solo se avisa
+    assert reloj.t > 30
+
+
+def test_host_de_fabric_no_es_login(monkeypatch):
+    nav, _ = navegador_falso(monkeypatch, [LISTO])
+    nav._driver.current_url = "https://app.fabric.microsoft.com/groups/me/reports/x"
+    assert nav._en_inicio_de_sesion() is False
 
 
 def test_login_que_nadie_completa_es_servicio_caido(monkeypatch):

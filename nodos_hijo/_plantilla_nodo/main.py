@@ -129,6 +129,8 @@ def main() -> int:
     nodo_id = config["nodo_id"]
     configurar_logging(nodo_id)
     cerrar_ante_error = bool(config.get("cerrar_ante_error", False))
+    # Cuántas lecturas fallidas SEGUIDAS hacen falta para dar el servicio por caído (1 = la primera).
+    fallos_para_caido = max(1, int(config.get("fallos_para_caido", 1)))
     extractor = crear_extractor(config)
 
     if args.solo_mostrar:
@@ -153,6 +155,7 @@ def main() -> int:
     ultima_huella_captura: str | None = None
     ultimo_envio = ultimo_envio_captura = 0.0
     lecturas_ok = 0
+    fallos_seguidos = 0
     codigo_salida = 0
     numero_lectura = 0
     try:
@@ -171,7 +174,11 @@ def main() -> int:
                              len(captura["visuales"]))
                     ultima_huella_captura, ultimo_envio_captura = huella, time.monotonic()
 
-            if lectura.fatal:
+            fallos_seguidos = fallos_seguidos + 1 if lectura.fatal else 0
+            if lectura.fatal and fallos_seguidos < fallos_para_caido:
+                log.warning("Lectura #%d falló (%d de %d seguidas antes de dar el servicio por caído): se reintenta",
+                            numero_lectura, fallos_seguidos, fallos_para_caido)
+            elif lectura.fatal:
                 emisor.avisar_estado("caido", lectura.error, tipo_error=lectura.tipo_error, fuente=extractor.fuente,
                                      lecturas_ok=lecturas_ok)
                 log.error("SERVICIO CAÍDO: el nodo %s se cierra. Revisa el error de arriba y vuelve a "

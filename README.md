@@ -244,7 +244,13 @@ vencida o no iniciada a tiempo, reporte que no carga o un error inesperado → e
 `estados_nodos`, escribe una alerta `servicio_caido` (P1) en `salida/alertas_powerautomate.json` y el
 healthchecker muestra `NODO CAÍDO`. Para volver a leer, se corrige el problema y se inicia el nodo de nuevo.
 
-**Ver qué pasa por detrás**: doble clic en **`iniciar_powerbi.bat`** (raíz) abre una consola por proceso; la
+**Lector VIKI en una sola consola**: doble clic en **`leer_viki.bat`** (raíz). Abre Edge con Selenium, carga el
+tablero, cada 15 s recarga, inyecta y envía al padre; todo se ve en esa misma consola. El padre debe estar
+corriendo aparte (`iniciar.bat`). Una lectura que falla no tumba el nodo: hacen falta `fallos_para_caido` (3)
+fallos seguidos para avisar `caido` y cerrar. Si el tablero tiene datos pero no queda 100 % "listo" (un spinner
+pegado, por ejemplo), se lee igual y se avisa en la consola. Si no carga nada, deja `logs/powerbi_error.png`.
+
+**Ver qué pasa por detrás (todo el sistema)**: doble clic en **`iniciar_powerbi.bat`** (raíz) abre una consola por proceso; la
 de `nodo_powerbi_viki` muestra cada recarga, la espera de carga, la inyección y los envíos al padre, y **no se
 cierra** si el nodo se cae (para leer el error). Para correr solo el nodo en una consola:
 **`nodos_hijo\nodo_powerbi_viki\ver_nodo_powerbi.bat`**. Todo queda también en `logs/nodo_powerbi_viki.log`.

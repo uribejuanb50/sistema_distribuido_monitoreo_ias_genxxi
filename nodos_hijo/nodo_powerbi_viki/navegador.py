@@ -56,6 +56,7 @@ if (cargador) {
 const texto = arguments[0];
 return {
     visuales: visuales.length,
+    con_texto: visuales.filter((v) => (v.textContent || '').trim() !== '').length,
     pantalla_carga: pantallaCarga,
     visuales_cargando: document.querySelectorAll('visual-container .powerbi-spinner.shown').length,
     texto_listo: !texto || visuales.some((v) => (v.textContent || '').includes(texto)),
@@ -138,8 +139,7 @@ class NavegadorPowerBI:
             self.cerrar()
             raise ErrorServicio(f"Error del navegador: {self._explicar(error)}") from error
         except ErrorServicio:
-            self.cerrar()
-            raise
+            raise  # el navegador queda abierto: la próxima lectura vuelve a recargar la página
         con_datos = sum(1 for visual in visuales if visual["textos"] or visual["filas"])
         log.info("Capturados %d visuales (%d con datos)", len(visuales), con_datos)
         return {"capturado_en": ahora_iso(), "origen": self.url, "visuales": visuales}
@@ -212,7 +212,9 @@ class NavegadorPowerBI:
         if not self.host_reporte:
             return False
         host = urlparse(self._driver.current_url).hostname or ""
-        return host != self.host_reporte
+        if not host:  # about:blank, data:, file:
+            return False
+        return not (host == self.host_reporte or host.endswith((".powerbi.com", "fabric.microsoft.com")))
 
     def _esperar_reporte(self) -> None:
         """Espera a que el embed termine de cargar (y, si hace falta, a que inicies sesión)."""
@@ -243,8 +245,10 @@ class NavegadorPowerBI:
                 aviso_login = False
 
             estado = self._driver.execute_script(SCRIPT_ESTADO_CARGA, self.texto_listo)
-            listo = (estado["visuales"] >= self.minimo_visuales and not estado["pantalla_carga"]
-                     and estado["visuales_cargando"] == 0 and estado["texto_listo"])
+            # "basico": hay visuales con datos (suficiente para leer si se acaba el tiempo).
+            basico = estado["visuales"] >= self.minimo_visuales and estado["con_texto"] > 0
+            listo = (basico and not estado["pantalla_carga"] and estado["visuales_cargando"] == 0
+                     and estado["texto_listo"])
             if listo:
                 firma = self._driver.execute_script(SCRIPT_FIRMA)
                 if firma != firma_anterior:
@@ -255,15 +259,22 @@ class NavegadorPowerBI:
                 firma_anterior = None
 
             if ahora - ultimo_aviso >= 5:
-                log.info("Esperando el tablero: %s | %d/%d visuales | %d visuales con 'Cargando...' | texto '%s' %s",
-                         "pantalla de carga de Power BI" if estado["pantalla_carga"] else "sin pantalla de carga",
-                         estado["visuales"], self.minimo_visuales, estado["visuales_cargando"], self.texto_listo,
-                         "visible" if estado["texto_listo"] else "aún no aparece")
+                log.info("Esperando el tablero: %s | %d/%d visuales (%d con datos) | %d con 'Cargando...' | "
+                         "texto '%s' %s", "pantalla de carga" if estado["pantalla_carga"] else "sin pantalla de carga",
+                         estado["visuales"], self.minimo_visuales, estado["con_texto"], estado["visuales_cargando"],
+                         self.texto_listo, "visible" if estado["texto_listo"] else "aún no aparece")
                 ultimo_aviso = ahora
             if ahora > limite:
-                if listo:
-                    log.warning("Los datos siguen cambiando tras %d s: se captura de todos modos", self.espera_carga)
+                if basico:  # la página está ahí con datos: se lee igual y se avisa por qué no estaba "lista"
+                    pendientes = [m for m, activo in (("pantalla de carga visible", estado["pantalla_carga"]),
+                                  (f"{estado['visuales_cargando']} visuales con 'Cargando...'",
+                                   estado["visuales_cargando"] > 0),
+                                  (f"sin el texto '{self.texto_listo}'", not estado["texto_listo"]),
+                                  ("los textos siguen cambiando", listo)) if activo]
+                    log.warning("Pasaron %d s y el tablero no quedó 100%% listo (%s): se lee de todos modos",
+                                self.espera_carga, ", ".join(pendientes))
                     return
+                self._guardar_pantallazo()
                 raise ErrorServicio(
                     f"El tablero no terminó de cargar en {self.espera_carga:.0f} s (visuales: {estado['visuales']}, "
                     f"pantalla de carga: {'sí' if estado['pantalla_carga'] else 'no'}, visuales cargando: "
@@ -271,6 +282,17 @@ class NavegadorPowerBI:
                     f"{'sí' if estado['texto_listo'] else 'no'}; página '{self._driver.title}'). "
                     "¿Tienes acceso al reporte? Si tu red es lenta, sube 'espera_carga_segundos'")
             time.sleep(0.5)
+
+    def _guardar_pantallazo(self) -> None:
+        """Deja un pantallazo de lo que veía el navegador al fallar (logs/powerbi_error.png)."""
+        try:
+            from comun.utilidades import DIR_LOGS
+            DIR_LOGS.mkdir(exist_ok=True)
+            ruta = DIR_LOGS / "powerbi_error.png"
+            self._driver.save_screenshot(str(ruta))
+            log.error("Pantallazo del navegador al fallar: %s", ruta)
+        except Exception:  # el pantallazo es solo ayuda: nunca debe tapar el error real
+            pass
 
     def _leer_tablas_completas(self, visuales: list[dict[str, Any]]) -> None:
         """Desplaza cada tabla hasta el final y junta todas sus filas (sin repetir)."""

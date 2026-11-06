@@ -16,6 +16,8 @@
 
   "_cerrar_ante_error": "true = si el servicio falla (navegador, sesión, reporte que no carga) se avisa al padre que se cayó y el nodo se CIERRA.",
   "cerrar_ante_error": true,
+  "_fallos_para_caido": "Lecturas fallidas SEGUIDAS antes de dar el servicio por caído y cerrar (una recarga lenta no tumba el nodo).",
+  "fallos_para_caido": 3,
 
   "navegador": "edge",
   "navegador_visible": true,
